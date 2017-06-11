@@ -15,7 +15,7 @@ function CheckJoyCompatibility()
 		end
 end
 
-function love.joystickpressed(joy,butt)
+function love.joystickpressed(joy, butt)
 	--PLAYER1 JOYSTICK
 		if (joy == joysticks[1]) then
 			if (butt == player1.controller.SWING) then
