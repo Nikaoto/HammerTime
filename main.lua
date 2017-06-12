@@ -268,5 +268,5 @@ function postSolve(a,b,coll)
 end
 
 function love.quit()
-	print("BBBB")
+	print("Goodbye!")
 end
