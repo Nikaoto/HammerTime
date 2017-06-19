@@ -6,6 +6,9 @@ require("player1");
 require("player2");
 require("player3");
 
+Object = require 'libraries/classic/classic'
+require 'objects/Player'
+
 function Init()
 	success = love.window.setMode(1024, 800, {resizable=false,vsync=false,borderless=false,centered=true,display = 2});
 	love.window.setTitle("Hammer Time");
@@ -30,6 +33,9 @@ function Init()
 	SWINGCOST = 30;
 	joysticks = love.joystick.getJoysticks();
 	compatibleJoyCount = 0;
+
+	--Testing classes
+	mPlayer = Player:new()
 end
 
 function love.load()
@@ -153,7 +159,7 @@ function love.draw()
 				drawP4();
 			end
 		end
-		]]
+		]]--
 		
 		--DRAWING HUD STUFF
 		if(compatibleJoyCount > 0) then
