@@ -160,7 +160,7 @@ function love.draw()
 			if(player1.dead) then
 				love.graphics.print({{255,0,0}, "R.I.P."},player1.x,player1.y,0,2,2);
 			else
-				--draw player1 health
+				--draw p1 health
 				drawHealthBar(player1.hp,player1.chp,player1.x - player1.ox, player1.y - player1.oy,player1.sprite:getWidth(),HPBAR_HEIGHT);
 
 				--draw p1 stamina
