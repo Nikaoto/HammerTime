@@ -1,5 +1,5 @@
 
-require("jsmanager");
+require("joymanager");
 require("math1");
 require("physics");
 require("player1");
@@ -91,7 +91,7 @@ function checkDeath(chp,body)
 		return true;
 	else
 		return false;
-	end 
+	end
 end
 
 function dealDamage(px,py,chp)
@@ -152,7 +152,7 @@ function love.draw()
 				drawP3();
 			end
 		end
-		
+
 		--[[
 		if(compatibleJoyCount > 3) then
 			if not(player4.dead) then
@@ -160,7 +160,7 @@ function love.draw()
 			end
 		end
 		]]--
-		
+
 		--DRAWING HUD STUFF
 		if(compatibleJoyCount > 0) then
 			if(player1.dead) then
