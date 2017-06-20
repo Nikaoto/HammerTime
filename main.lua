@@ -9,6 +9,7 @@ require("player3");
 
 Object = require 'libraries/classic/classic'
 require 'objects/Player'
+require 'objects/Hammer'
 
 function Init()
 	success = love.window.setMode(display.width, display.height, display.settings)
@@ -30,7 +31,7 @@ function Init()
 	LOOK_ZONE = 80;
 	SWING_MOVESPEED = 190;
 	MOVESPEED = 400;
-	TICK = 0.1;
+	TICK = 0.2;
 	HIT = 1;
 	HITMOD = 50;
 	SWING_COST_MOD = 450;
@@ -43,6 +44,19 @@ function love.load()
 	CheckJoyCompatibility();
 
 	--create players
+--[[	p1Hammer = Hammer(300, 400, love.graphics.newImage("/res/hammer.png"), "p1Hammer")
+	function Hammer:new(posX, posY, sprite, world, userData)
+	player1 = Player(300,	--posX
+									 400,	--posY
+									 100, --HP
+									 100, --SP
+									 love.graphics.newImage("/res/bloq1.png"), --Sprite
+									 p1Hammer, --Weapon
+									 Controller(joysticks[2]), --Controller
+									 world,	--world
+								 	 "P1") --User Data (for collisions)]]
+
+
 	if(compatibleJoyCount > 0) then createP1();
 	else print("NO JOYSTICKS RECOGNIZED, PLUG IN CONTROLLERS AND RESTART THE GAME"); end
 
@@ -51,6 +65,7 @@ function love.load()
 
 	if(compatibleJoyCount > 2) then createP3();
 	end
+
 	--aim = love.graphics.newImage("/res/aim.png");
 end
 

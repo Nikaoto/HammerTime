@@ -8,7 +8,7 @@ function createP1()
 		lx = 100, ly = 100,	--look x and y
 		lox = 5, loy = 5, --look crosshair origin x and y
 		rot = 0,  --rotation
-		time = 0, tend = 0, rotA = 0, rotB = 0, rotC = 0, --for calculating swing speed (rotAfter, rotBefore, rotChange)
+		time = 0, tend = 0, rotA = 0, rotB = 0, --for calculating swing speed (rotAfter, rotBefore, rotChange)
 		sprite = love.graphics.newImage("/res/bloq1.png"),  --loading player sprite
 		speed = MOVESPEED,  --do really need to explain what this is?
 		rotspeed = 0,  --rotation speed of player
@@ -64,16 +64,22 @@ function P1Input()
 end
 
 function P1Rot() --finds the rotational speed of the hammer
+	--Set starting time
 	player1.time = love.timer.getTime();
-	player1.rotA = math.rad(player1.rot);
+	--Save player rotation in radians
+	local rotA = math.rad(player1.rot);
+	--Save hammer X and Y
 	player1.hammer.xA = player1.hammer.x;
 	player1.hammer.yA = player1.hammer.y;
+
+	--Check if time elapsed
 	if(player1.time >= player1.tend) then
-		player1.rotB = player1.rot;
-		player1.rotC = player1.rotB - player1.rotA;
-		player1.hammer.xB = player1.hammer.x;
-		player1.hammer.yB = player1.hammer.y;
-		player1.rotspeed = player1.rotC;
+		--Save current hammer X and Y
+		player1.hammer.xB = player1.hammer.x
+		player1.hammer.yB = player1.hammer.y
+		--Calculate difference between saved and current rotations
+		player1.rotspeed = math.rad(player1.rot) - rotA
+		--Set next rotation check time
 		player1.tend = player1.time + TICK;
 	end
 end
@@ -95,12 +101,12 @@ function P1Control()
 
 	--LOOKING for Player1
 	if (abs(player1.controller.axisDir4) > player1.controller.DEAD_ZONE_R) then  --checking deadzone
-		player1.lx = player1.x + player1.controller.axisDir4 * LOOK_ZONE;	--moving crosshair
+		player1.lx = player1.x + player1.controller.axisDir4 * LOOK_ZONE	--moving crosshair
 	else
 		player1.lx = player1.x;
 	end
 	if (abs(player1.controller.axisDir3) > player1.controller.DEAD_ZONE_R) then  --checking deadzone
-		player1.ly = player1.y + player1.controller.axisDir3 * LOOK_ZONE;	--moving crosshair
+		player1.ly = player1.y + player1.controller.axisDir3 * LOOK_ZONE	--moving crosshair
 	else
 		player1.ly = player1.y;
 	end
@@ -112,7 +118,8 @@ function P1Control()
 	end
 	--setting Hammer pos
 	if(player1.hammer.isSwinging) then
-		player1.hammer.rigidbody.b:setPosition((player1.x+player1.lx) / 2, (player1.y+player1.ly) / 2 );
+		player1.hammer.rigidbody.b:setPosition((player1.x + player1.lx) / 2,
+																					 (player1.y + player1.ly) / 2)
 	else
 		player1.hammer.rigidbody.b:setPosition(player1.x,player1.y);
 	end
