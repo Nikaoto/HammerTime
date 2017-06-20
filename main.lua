@@ -1,7 +1,8 @@
 
-require("joymanager");
-require("math1");
-require("physics");
+require "config" --Defines configuration / settings
+require "joymanager"  --Manges joysticks
+require("math1"); --Mthematics functions
+require("physics"); --Physics methods
 require("player1");
 require("player2");
 require("player3");
@@ -10,12 +11,15 @@ Object = require 'libraries/classic/classic'
 require 'objects/Player'
 
 function Init()
-	success = love.window.setMode(1024, 800, {resizable=false,vsync=false,borderless=false,centered=true,display = 2});
+	success = love.window.setMode(display.width, display.height, display.settings)
 	love.window.setTitle("Hammer Time");
 	world = love.physics.newWorld(0, 0, true);
 	world:setCallbacks(beginContact, endContact, preSolve, postSolve);
 	BG = love.graphics.newImage("/res/background1.png");
 	BG:setWrap("repeat","repeat");
+
+	initJoysticks()
+
 	HPBAR_YOFFSET = 10;
 	SPBAR_YOFFSET = 5;
 	HPBAR_HEIGHT = 8;
@@ -31,11 +35,7 @@ function Init()
 	HITMOD = 50;
 	SWING_COST_MOD = 450;
 	SWINGCOST = 30;
-	joysticks = love.joystick.getJoysticks();
 	compatibleJoyCount = 0;
-
-	--Testing classes
-	mPlayer = Player:new()
 end
 
 function love.load()
@@ -54,13 +54,15 @@ function love.load()
 	--aim = love.graphics.newImage("/res/aim.png");
 end
 
+function love.keypressed(key)
+	if key == "escape" then
+		love.event.quit()
+	end
+end
 
 function love.update(dt)
-	if not(PAUSED) and not(JOYDISCONNECTED) then
+	if not PAUSED and not JOYDISCONNECTED then
 		world:update(dt);
-		if (love.keyboard.isDown("escape")) then  --if escape is pressed, quit
-			love.event.quit();
-		end
 		if(compatibleJoyCount > 0) then
 			if not(player1.dead) then
 				P1Input();

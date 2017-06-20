@@ -25,12 +25,12 @@ function createP1()
 			}
 		},
 		controller = {
-			joystick = joysticks[1],  --which joystick belongs to to this player 
+			joystick = joysticks[1],  --which joystick belongs to to this player
 			axisDir1,axisDir2,axisDir3,axisDir4, --axii
 			SWING = 8,	--button for swing
 			DASH = 7,	--button for dash
 			PAUSE = 10, --button for pause
-			DEAD_ZONE_L = 0.23,	--left axis deadzone 
+			DEAD_ZONE_L = 0.23,	--left axis deadzone
 			DEAD_ZONE_R = 0.28	--right axis deadzone
 		}
 	};
@@ -38,7 +38,7 @@ function createP1()
 	--setting player1 origin x and y
 	player1.ox = player1.sprite:getWidth()/2;
 	player1.oy = player1.sprite:getHeight()/2;
-	
+
 	--creating player1 rigidbody
 	player1.rigidbody = {};
 		player1.rigidbody.b = love.physics.newBody(world,player1.x,player1.y,"dynamic");
@@ -50,7 +50,7 @@ function createP1()
 		player1.rigidbody.f:setUserData("P1");
 	player1.hammer.rigidbody = {};
 		player1.hammer.rigidbody.b = love.physics.newBody(world,player1.hammer.x,player1.hammer.y,"dynamic");
-		player1.hammer.rigidbody.b:setMass(0); 
+		player1.hammer.rigidbody.b:setMass(0);
 		player1.hammer.rigidbody.s = love.physics.newRectangleShape(player1.hammer.sprite:getWidth(),player1.hammer.sprite:getHeight()); --hammer height = 25
 		player1.hammer.rigidbody.f = love.physics.newFixture(player1.hammer.rigidbody.b,player1.hammer.rigidbody.s);
 		player1.hammer.rigidbody.b:setLinearDamping(20);
@@ -84,7 +84,7 @@ function P1Control()
 	player1.hammer.rigidbody.b:setAngle(math.rad(player1.rot));
 	--MOVEMENT for Player1
 	velx,vely = player1.rigidbody.b:getLinearVelocity();  --setting velocity
-	if (abs(player1.controller.axisDir1) > player1.controller.DEAD_ZONE_L) then  --checking deadzone 
+	if (abs(player1.controller.axisDir1) > player1.controller.DEAD_ZONE_L) then  --checking deadzone
 		player1.rigidbody.b:setLinearVelocity(player1.speed*player1.controller.axisDir1,vely);  --moving player
 	end
 
@@ -120,7 +120,7 @@ function P1Control()
 	--setting player pos
 	player1.x,player1.y = player1.rigidbody.b:getPosition();
 	--setting player rigidbody position
-	player1.rigidbody.b:setPosition(testScreenCollision(player1.x,player1.y,player1.ox,player1.oy,player1.sprite:getWidth(), player1.sprite:getHeight())); 
+	player1.rigidbody.b:setPosition(testScreenCollision(player1.x,player1.y,player1.ox,player1.oy,player1.sprite:getWidth(), player1.sprite:getHeight()));
 end
 
 function P1Stamina(dt) --manages the stamina
@@ -140,9 +140,9 @@ end
 
 function drawP1()
 	--draw player1
-	love.graphics.draw(player1.sprite, player1.x, player1.y, math.rad(player1.rot),1,1,player1.ox,player1.oy);  
+	love.graphics.draw(player1.sprite, player1.x, player1.y, math.rad(player1.rot),1,1,player1.ox,player1.oy);
 	--draw Player1 hammer
 		if(player1.hammer.isSwinging) then
-			love.graphics.draw(player1.hammer.sprite,player1.hammer.x,player1.hammer.y,player1.hammer.rigidbody.b:getAngle(),1,1,player1.hammer.ox,player1.hammer.oy);  
+			love.graphics.draw(player1.hammer.sprite,player1.hammer.x,player1.hammer.y,player1.hammer.rigidbody.b:getAngle(),1,1,player1.hammer.ox,player1.hammer.oy);
 		end
 end

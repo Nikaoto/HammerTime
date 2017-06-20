@@ -1,4 +1,7 @@
---require("main");
+function initJoysticks()
+	joysticks = love.joystick.getJoysticks()
+end
+
 function CheckJoyCompatibility()
 		for i=1,4 do
 			if not(joysticks[i] == nil) then
@@ -19,7 +22,7 @@ function love.joystickpressed(joy, butt)
 	--PLAYER1 JOYSTICK
 		if (joy == joysticks[1]) then
 			if (butt == player1.controller.SWING) then
-				if(player1.csp >=SWINGCOST) then
+				if(player1.csp >= SWINGCOST) then
 					player1.hammer.isSwinging = true;
 				else
 					player1.hammer.isSwinging = false;
