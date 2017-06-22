@@ -8,7 +8,7 @@ local s = {}
 --Invisible crosshair location
 local lookX, lookY = 0, 0
 
-function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userData)
+function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userData, shader)
 	--Creating s metatable so I can type "s" instead of "self"
 	s = setmetatable(s, self)
 	self.__index = self
@@ -19,6 +19,7 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userD
 	--Injecting classes
 	s.controller = controller
 	s.weapon = weapon
+	s.shader = shader
 	--General variables
 	s.dead = false
 	s.isSwinging = false
@@ -57,6 +58,7 @@ end
 
 function Player:update(dt)
 	s.controller:getInput()
+	s.shader:update()
 	s:move()
 	s:moveWeapon()
 	s:rotate()
@@ -147,7 +149,16 @@ function Player:manageStamina(dt)
 end
 
 function Player:draw()
+	--Setting player color (shader)
+	love.graphics.setShader(s.shader)
+	--Drawing player
 	love.graphics.draw(s.sprite, s.getX(), s.getY(), s.rigid.body:getAngle(), 1, 1, s.ox, s.oy);
+	--Drawing weapon if swinging
+	if s.isSwinging then
+		s.weapon:draw()
+	end
+	--Removing shader
+	love.graphics.setShader()
 end
 
 function Player:getRotation()

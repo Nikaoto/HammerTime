@@ -11,14 +11,19 @@ function createP2()
     time = 0, tend = 0, rotA = 0, rotB = 0, rotC = 0, --for calculating swing speed (rotAfter, rotBefore, rotChange)
     sprite = love.graphics.newImage("/res/bloq1.png"),  --loading player sprite
     Shader = love.graphics.newShader[[
+      extern number setRed;
+      extern number setGreen;
+      extern number setBlue;
       vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
       {
-        vec4 pixel = Texel(texture, texture_coords );//This is the current pixel color
+        //Getting current pixel color
+        vec4 pixel = Texel(texture, texture_coords );
+        //Checking if current pixel isn't the white direction line
         if(pixel.r == 1 && pixel.g != 1 && pixel.b !=1)
           {
-            pixel.r = 0;
-            pixel.g = 0;
-            pixel.b = 255;
+            pixel.r = setRed;
+            pixel.g = setGreen;
+            pixel.b = setBlue;
           }
         return pixel * color;
       }

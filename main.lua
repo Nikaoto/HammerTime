@@ -1,7 +1,8 @@
 
 require "config" --Defines configuration / settings
 require "joymanager"  --Manges joysticks
-require("math1"); --Mthematics functions
+require "math1"  --Mthematics functions
+require "shadermanager" --TODO turn this into a class
 require("physics"); --Physics methods
 require("player1");
 require("player2");
@@ -10,6 +11,7 @@ require("player3");
 Object = require 'libraries/classic/classic'
 require 'objects/Player'
 require 'objects/Hammer'
+require 'objects/PlayerShader'
 
 function Init()
 	success = love.window.setMode(display.width, display.height, display.settings)
@@ -36,6 +38,7 @@ function Init()
 	HITMOD = 50;
 	SWING_COST_MOD = 450;
 	SP_REGEN = 30;
+	SWINGCOST = 30;
 	compatibleJoyCount = 0;
 end
 

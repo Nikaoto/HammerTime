@@ -134,7 +134,7 @@ function P1Stamina(dt) --manages the stamina
 			player1.hammer.isSwinging = false;
 		end
 	else
-		player1.csp = player1.csp + dt*SWINGCOST;
+		player1.csp = player1.csp + dt * SWINGCOST;
 		if(player1.csp >=player1.sp) then
 			player1.csp = player1.sp;
 		end

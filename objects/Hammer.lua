@@ -34,8 +34,7 @@ function Hammer:update(dt)
 end
 
 function Hammer:draw()
-  local x, y = s.rigid.body:getPosition()
-  love.graphics.draw(s.sprite, x, y, s.rigid.body:getAngle(), 1, 1, s.ox, s.oy)
+  love.graphics.draw(s.sprite, s:getX(), s:getY(), s.rigid.body:getAngle(), 1, 1, s.ox, s.oy)
 end
 
 function Hammer:setRotation(radians)
