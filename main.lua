@@ -2,7 +2,6 @@
 require "config" --Defines configuration / settings
 require "joymanager"  --Manges joysticks
 require "math1"  --Mthematics functions
-require "shadermanager" --TODO turn this into a class
 require("physics"); --Physics methods
 require("player1");
 require("player2");
@@ -36,9 +35,9 @@ function Init()
 	TICK = 0.2;
 	HIT = 1;
 	HITMOD = 50;
-	SWING_COST_MOD = 450;
-	SP_REGEN = 30;
-	SWINGCOST = 30;
+	SWING_COST_MOD = 55;
+	SP_REGEN = 35;
+	SWINGCOST = 25;
 	compatibleJoyCount = 0;
 end
 

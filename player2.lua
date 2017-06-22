@@ -11,23 +11,19 @@ function createP2()
     time = 0, tend = 0, rotA = 0, rotB = 0, rotC = 0, --for calculating swing speed (rotAfter, rotBefore, rotChange)
     sprite = love.graphics.newImage("/res/bloq1.png"),  --loading player sprite
     Shader = love.graphics.newShader[[
-      extern number setRed;
-      extern number setGreen;
-      extern number setBlue;
-      vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords )
-      {
-        //Getting current pixel color
-        vec4 pixel = Texel(texture, texture_coords );
-        //Checking if current pixel isn't the white direction line
-        if(pixel.r == 1 && pixel.g != 1 && pixel.b !=1)
-          {
-            pixel.r = setRed;
-            pixel.g = setGreen;
-            pixel.b = setBlue;
-          }
-        return pixel * color;
-      }
-    ]],
+		vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords)
+		{
+			vec4 pixel = Texel(texture, texture_coords);
+			if(pixel.r == 1 && pixel.g != 1 && pixel.b != 1)
+				{
+					pixel.r = 0;
+					pixel.g = 0;
+					pixel.b = 255;
+				}
+
+			return pixel * color;
+		}
+		]],
     speed = MOVESPEED,  --do really need to explain what this is?
     rotspeed = 0,  --rotation speed of player
     hammer = {
@@ -149,12 +145,12 @@ end
 function P2Stamina(dt) --manages the stamina
   if(player2.hammer.isSwinging) then
     local sw = math.distance(player2.hammer.xB,player2.hammer.yB,player2.hammer.xA,player2.hammer.yA); --calculating distance for stamina loss
-    player2.csp = player2.csp - sw/SWING_COST_MOD;
+    player2.csp = player2.csp - SWING_COST_MOD *dt -- * sw;
     if(player2.csp <=0) then
       player2.hammer.isSwinging = false;
     end
   else
-    player2.csp = player2.csp + dt*SWINGCOST;
+    player2.csp = player2.csp + dt*SP_REGEN;
     if(player2.csp >=player2.sp) then
       player2.csp = player2.sp;
     end

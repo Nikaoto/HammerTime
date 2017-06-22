@@ -39,12 +39,12 @@ function createP3()
 			}
 		},
 		controller = {
-			joystick = joysticks[3],  --which joystick belongs to to this player 
+			joystick = joysticks[3],  --which joystick belongs to to this player
 			axisDir1,axisDir2,axisDir3,axisDir4, --axii
 			SWING = 8,	--button for swing
 			DASH = 7,	--button for dash
 			PAUSE = 10, --button for pause
-			DEAD_ZONE_L = 0.23,	--left axis deadzone 
+			DEAD_ZONE_L = 0.23,	--left axis deadzone
 			DEAD_ZONE_R = 0.28	--right axis deadzone
 		}
 	};
@@ -52,7 +52,7 @@ function createP3()
 	--setting player3 origin x and y
 	player3.ox = player3.sprite:getWidth()/2;
 	player3.oy = player3.sprite:getHeight()/2;
-	
+
 	--creating player3 rigidbody
 	player3.rigidbody = {};
 		player3.rigidbody.b = love.physics.newBody(world,player3.x,player3.y,"dynamic");
@@ -64,7 +64,7 @@ function createP3()
 		player3.rigidbody.f:setUserData("P3");
 	player3.hammer.rigidbody = {};
 		player3.hammer.rigidbody.b = love.physics.newBody(world,player3.hammer.x,player3.hammer.y,"dynamic");
-		player3.hammer.rigidbody.b:setMass(0); 
+		player3.hammer.rigidbody.b:setMass(0);
 		player3.hammer.rigidbody.s = love.physics.newRectangleShape(player3.hammer.sprite:getWidth(),player3.hammer.sprite:getHeight()); --hammer height = 25
 		player3.hammer.rigidbody.f = love.physics.newFixture(player3.hammer.rigidbody.b,player3.hammer.rigidbody.s);
 		player3.hammer.rigidbody.b:setLinearDamping(20);
@@ -98,7 +98,7 @@ function P3Control()
 	player3.hammer.rigidbody.b:setAngle(math.rad(player3.rot));
 	--MOVEMENT for player3
 	velx,vely = player3.rigidbody.b:getLinearVelocity();  --setting velocity
-	if (abs(player3.controller.axisDir1) > player3.controller.DEAD_ZONE_L) then  --checking deadzone 
+	if (abs(player3.controller.axisDir1) > player3.controller.DEAD_ZONE_L) then  --checking deadzone
 		player3.rigidbody.b:setLinearVelocity(player3.speed*player3.controller.axisDir1,vely);  --moving player
 	end
 
@@ -134,18 +134,18 @@ function P3Control()
 	--setting player pos
 	player3.x,player3.y = player3.rigidbody.b:getPosition();
 	--setting player rigidbody position
-	player3.rigidbody.b:setPosition(testScreenCollision(player3.x,player3.y,player3.ox,player3.oy,player3.sprite:getWidth(), player3.sprite:getHeight())); 
+	player3.rigidbody.b:setPosition(testScreenCollision(player3.x,player3.y,player3.ox,player3.oy,player3.sprite:getWidth(), player3.sprite:getHeight()));
 end
 
 function P3Stamina(dt) --manages the stamina
 	if(player3.hammer.isSwinging) then
 		local sw = math.distance(player3.hammer.xB,player3.hammer.yB,player3.hammer.xA,player3.hammer.yA); --calculating distance for stamina loss
-		player3.csp = player3.csp - sw/SWING_COST_MOD;
+		player3.csp = player3.csp - SWING_COST_MOD * dt
 		if(player3.csp <=0) then
 			player3.hammer.isSwinging = false;
 		end
 	else
-		player3.csp = player3.csp + dt*SWINGCOST;
+		player3.csp = player3.csp + dt * SP_REGEN;
 		if(player3.csp >=player3.sp) then
 			player3.csp = player3.sp;
 		end
@@ -153,13 +153,13 @@ function P3Stamina(dt) --manages the stamina
 end
 
 function drawP3()
-	--apply shader first 
+	--apply shader first
 	love.graphics.setShader(player3.Shader);
 	--draw player3
-	love.graphics.draw(player3.sprite, player3.x, player3.y, math.rad(player3.rot),1,1,player3.ox,player3.oy);  
+	love.graphics.draw(player3.sprite, player3.x, player3.y, math.rad(player3.rot),1,1,player3.ox,player3.oy);
 	--draw player3 hammer
 		if(player3.hammer.isSwinging) then
-			love.graphics.draw(player3.hammer.sprite,player3.hammer.x,player3.hammer.y,player3.hammer.rigidbody.b:getAngle(),1,1,player3.hammer.ox,player3.hammer.oy);  
+			love.graphics.draw(player3.hammer.sprite,player3.hammer.x,player3.hammer.y,player3.hammer.rigidbody.b:getAngle(),1,1,player3.hammer.ox,player3.hammer.oy);
 		end
 	love.graphics.setShader(); --remove shader
 end

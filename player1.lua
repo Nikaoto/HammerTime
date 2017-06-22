@@ -63,7 +63,7 @@ function P1Rot() --finds the rotational speed of the hammer
 	--Set starting time
 	player1.time = love.timer.getTime();
 	--Save player rotation in radians
-	local rotA = math.rad(player1.rot);
+	local rotA = player1.rot
 	--Save hammer X and Y
 	player1.hammer.xA = player1.hammer.x;
 	player1.hammer.yA = player1.hammer.y;
@@ -74,7 +74,7 @@ function P1Rot() --finds the rotational speed of the hammer
 		player1.hammer.xB = player1.hammer.x
 		player1.hammer.yB = player1.hammer.y
 		--Calculate difference between saved and current rotations
-		player1.rotspeed = math.rad(player1.rot) - rotA
+		player1.rotspeed = player1.rot - rotA
 		--Set next rotation check time
 		player1.tend = player1.time + TICK;
 	end
@@ -129,12 +129,13 @@ end
 function P1Stamina(dt) --manages the stamina
 	if(player1.hammer.isSwinging) then
 		local sw = math.distance(player1.hammer.xB,player1.hammer.yB,player1.hammer.xA,player1.hammer.yA); --calculating distance for stamina loss
-		player1.csp = player1.csp - sw/SWING_COST_MOD;
+		print (player1.rotspeed)
+		player1.csp = player1.csp - SWING_COST_MOD * dt --* player1.rotspeed;
 		if(player1.csp <=0) then
 			player1.hammer.isSwinging = false;
 		end
 	else
-		player1.csp = player1.csp + dt * SWINGCOST;
+		player1.csp = player1.csp + dt * SP_REGEN;
 		if(player1.csp >=player1.sp) then
 			player1.csp = player1.sp;
 		end
