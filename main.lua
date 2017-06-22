@@ -35,14 +35,13 @@ function Init()
 	HIT = 1;
 	HITMOD = 50;
 	SWING_COST_MOD = 450;
-	SWINGCOST = 30;
+	SP_REGEN = 30;
 	compatibleJoyCount = 0;
 end
 
 function love.load()
 	Init();
 	CheckJoyCompatibility();
-
 	--create players
 --[[	p1Hammer = Hammer(300, 400, love.graphics.newImage("/res/hammer.png"), "p1Hammer")
 	function Hammer:new(posX, posY, sprite, world, userData)
@@ -55,8 +54,6 @@ function love.load()
 									 Controller(joysticks[2]), --Controller
 									 world,	--world
 								 	 "P1") --User Data (for collisions)]]
-
-
 	if(compatibleJoyCount > 0) then createP1();
 	else print("NO JOYSTICKS RECOGNIZED, PLUG IN CONTROLLERS AND RESTART THE GAME"); end
 

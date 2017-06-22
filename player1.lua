@@ -18,11 +18,7 @@ function createP1()
 			x = 0, y = 0,  --position of swing (x,y)d
 			xB = 0, yB = 0, xA = 0, yA = 0, --for calculating swing speed
 			ox = 20,
-			oy = 25,
-			timer = {
-				start,
-				time = 0.5
-			}
+			oy = 25
 		},
 		controller = {
 			joystick = joysticks[1],  --which joystick belongs to to this player

@@ -1,5 +1,6 @@
 Player = Object:extend()
 require "physics"
+require "math1"
 
 --self
 local s = {}
@@ -12,9 +13,9 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userD
 	s = setmetatable(s, self)
 	self.__index = self
 
-	--Setting Health and Stamina points
-	s.hp = hp
-	s.sp = sp
+	--Setting maximum and current Health and Stamina points
+	s.maxHp, s.currHp = hp, hp
+	s.maxSp, s.currSp = sp, sp
 	--Injecting classes
 	s.controller = controller
 	s.weapon = weapon
@@ -22,6 +23,7 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userD
 	s.dead = false
 	s.isSwinging = false
 	s.moveSpeed = MOVESPEED
+	s.regenSp = SP_REGEN
 	s.sprite = sprite
 	--Setting origin x and y
 	s.ox = s.sprtie:getWidth()/2
@@ -31,7 +33,7 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userD
 		--Rotation speed
 		rotSpeed = 0,
 		--Body
-		body = love.physics.newBody(world, s.x, s.y, "dynamic"),
+		body = love.physics.newBody(world, posX, posY, "dynamic"),
 		--Circle Shape
 		shape = love.physics.newCircleShape(s.sprite.getWidth()/2,
 																				s.sprite.getHeight()/2),
@@ -51,14 +53,6 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userD
 																				  s.ox,	--anchor X
 																				  s.oy,	--anchor Y
 																				  false)--They don't collide
-end
-
-function Player:getX()
-	return s.rigid.body:getX()
-end
-
-function Player:getY()
-	return s.rigid.body:getY()
 end
 
 function Player:update(dt)
@@ -96,8 +90,7 @@ function Player:rotate()
 	--Getting changes in look direction (sets invisible crosshair location)
 	lookX = s:getX() + s.controller:getLookX()
 	lookY = s:getY() + s.controller:getLookY()
-
-	--Sets rigidbody rotation if it's rotating
+	--Sets rigidbody rotation if player is rotating
 	s.rigid.body:setAngle(
 		s.controller:getRotation(
 			s:getX(),
@@ -137,13 +130,47 @@ function Player:checkSwingSpeed(interval)
 end
 
 function Player:manageStamina(dt)
-	--TODO stamina management
+	if(s.weapon.isSwinging) then
+		--Calculating swing distance for stamina loss
+		local sw = math.distance(s.weapon.deltaX, s.weapon.deltaY)
+		s.currSp = s.currSp - sw / SWING_COST_MOD
+		if s.currSp <=0 then
+			s.isSwinging = false
+		end
+	else
+		s.currSp = player1.currSp + dt * s.regenSp
+		--Check in case of Sp overflow
+		if s.currSp >= s.maxSp  then
+			s.currSp = s.maxSp
+		end
+	end
 end
 
 function Player:draw()
-	love.graphics.draw(s.sprite, s.x, s.y, s.rigid.body:getAngle(), 1, 1, s.ox, s.oy);
+	love.graphics.draw(s.sprite, s.getX(), s.getY(), s.rigid.body:getAngle(), 1, 1, s.ox, s.oy);
 end
 
 function Player:getRotation()
 	return s.rigid.body:getAngle()
+end
+
+function Player:getX()
+	return s.rigid.body:getX()
+end
+
+function Player:getY()
+	return s.rigid.body:getY()
+end
+
+function Player:setX(x)
+	return s.rigid.body:setX(x)
+end
+
+function Player:setY(y)
+	return s.rigid.body:setY(y)
+end
+
+function Player:setPosition(x, y)
+	s.setX(x)
+	s.setY(y)
 end

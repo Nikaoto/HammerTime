@@ -22,5 +22,10 @@ end
 
 --Finds distance between 2 points
 function math.distance(x1, y1, x2, y2)
-	return math.sqrt(math.pow(x2- x1, 2) + math.pow(y2 - y1, 2))
+	return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
+end
+
+--Finds distance between 2 points
+function math.distance(dx, dy)
+	return math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
 end
