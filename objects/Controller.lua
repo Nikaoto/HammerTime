@@ -28,7 +28,7 @@ function Controller:getInput()
   --Getting the axii
   s.axisDir1, s.axisDir2, s.axisDir3, s.axisDir4 = s.joystick:getAxes()
 
-  --Moving invisible crosshair (used to calculate rotation angle)
+--[[  --Moving invisible crosshair (used to calculate rotation angle)
   if (abs(s.axisDir3) > s.deadZone.R) then  --checking deadzone
     player1.ly = player1.y + s.axisDir3 * LOOK_ZONE;	--moving crosshair
   else
@@ -39,7 +39,7 @@ function Controller:getInput()
     player1.lx = player1.x + s.axisDir4 * LOOK_ZONE;	--moving crosshair
   else
     player1.lx = player1.x;
-  end
+  end]]
 end
 
 --Gets the change in X coordinate from axis

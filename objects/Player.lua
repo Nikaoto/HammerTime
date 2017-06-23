@@ -120,14 +120,14 @@ function Player:checkSwingSpeed(interval)
 	local savedX = s.weapon:getX()
 	local savedY = s.weapon:getY()
 	--Check if time elapsed
-	if(s.time >= tend) then
+	if(time >= nextTick) then
 		--Calculate difference between saved and current positions
 		s.weapon.deltaX = savedX - s.weapon:getX()
-		s.weapon.deltaX = savedY - s.weapon:getY()
-		--Calculate difference between saved and current rotations
-		s.rigid.rotSpeed = s.rigid.body:getAngle() - rotA;
+		s.weapon.deltaY = savedY - s.weapon:getY()
+		--Calculate difference between saved and current rotations in time
+		s.rigid.rotSpeed = (s.rigid.body:getAngle() - rotA) / interval
 		--Set next rotation check time
-		nextTick = s.time + interval;
+		nextTick = time + interval;
 	end
 end
 

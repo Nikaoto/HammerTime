@@ -12,6 +12,8 @@ require 'objects/Player'
 require 'objects/Hammer'
 require 'objects/PlayerShader'
 
+local braxSound = love.audio.newSource("brax.ogg", "static")
+
 function Init()
 	success = love.window.setMode(display.width, display.height, display.settings)
 	love.window.setTitle("Hammer Time");
@@ -228,6 +230,7 @@ end
 function beginContact(a,b,coll)
 	if(a:getUserData() == "P1H") then  --checking P1 hammer collision
 		if((player1.hammer.isSwinging) and (CheckDeadzone(player1.controller.axisDir3,player1.controller.axisDir4,player1.controller.DEAD_ZONE_R))) then  --check if player is swinging
+			braxSound:play()
 			if(b:getUserData() == "P2") then --if colliding with P2, knock 'em back
 				local px,py = CalculateImpulse(player1.rotSpeed,player1.hammer.rigidbody.b:getMass(),player1.hammer.xB,player1.hammer.yB,player1.hammer.xA,player1.hammer.yA); --calculate impulse
 				b:getBody():applyLinearImpulse(px,py); --apply knockback
@@ -246,6 +249,7 @@ function beginContact(a,b,coll)
 	end
 	if(a:getUserData() == "P2H") then --checking P2 hammer collision
 		if((player2.hammer.isSwinging) and (CheckDeadzone(player2.controller.axisDir3,player2.controller.axisDir4,player2.controller.DEAD_ZONE_R))) then
+			braxSound:play()
 			if(b:getUserData() == "P1") then
 				local px,py = CalculateImpulse(player2.rotSpeed,player2.hammer.rigidbody.b:getMass(),player2.hammer.xB,player2.hammer.yB,player2.hammer.xA,player2.hammer.yA);
 				b:getBody():applyLinearImpulse(px,py);
@@ -263,6 +267,7 @@ function beginContact(a,b,coll)
 	end
 	if(a:getUserData() == "P3H") then --checking P3 hammer collision
 		if((player3.hammer.isSwinging) and (CheckDeadzone(player3.controller.axisDir3,player3.controller.axisDir4,player3.controller.DEAD_ZONE_R))) then
+			braxSound:play()
 			if(b:getUserData() == "P1") then
 				local px,py = CalculateImpulse(player3.rotSpeed,player3.hammer.rigidbody.b:getMass(),player3.hammer.xB,player3.hammer.yB,player3.hammer.xA,player3.hammer.yA);
 				b:getBody():applyLinearImpulse(px,py);
