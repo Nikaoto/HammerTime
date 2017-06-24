@@ -69,7 +69,7 @@ end
 function love.load()
 	initWorld()
 	initConstants()
-	--backgroundMusic:play()
+	backgroundMusic:play()
 	local joys = love.joystick.getJoysticks()
 	local j = love.joystick.getJoystickCount()
 	local interval = display.width / j
