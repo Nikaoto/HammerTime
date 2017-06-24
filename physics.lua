@@ -12,12 +12,12 @@ function testScreenCollision(x,y,ox,oy,w,h)
 	if(posy <=0) then
 		posy = 0;
 	elseif(posy + h >= love.graphics.getHeight()) then
-			posy = love.graphics.getHeight() - h;
+			posy = love.graphics.getHeight() - h
 	end
 
-	x = posx + ox;
-	y = posy + oy;
-	return x,y;
+	x = posx + ox
+	y = posy + oy
+	return x, y
 end
 
 function CalculateImpulse(rotSpeed,mass,x1,y1,x2,y2)

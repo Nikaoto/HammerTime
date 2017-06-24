@@ -23,6 +23,9 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, world, userData, shader,
 	--Setting look x and y
 	self.lookX = 0
 	self.lookY = 0
+	--Setting death x and y
+	self.deathX = 0
+	self.deathY = 0
 	--Rigidbody table
 	self.rigid = {
 		--Rotation speed
@@ -51,15 +54,17 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, world, userData, shader,
 end
 
 function Player:update(dt)
-	self.controller:getInput()
-	self:checkControls()
-	self.shader:update()
-	self:move()
-	self:moveWeapon()
-	self:rotate()
-	self:rotateWeapon()
-	self:checkSwingSpeed(TICK)
-	self:manageStamina(dt)
+	if not self.dead then
+		self.controller:getInput()
+		self:checkControls()
+		self.shader:update()
+		self:move()
+		self:updateWeapon()
+		self:rotate()
+		self:rotateWeapon()
+		self:checkSwingSpeed(TICK)
+		self:manageStamina(dt)
+	end
 end
 
 --Checks for button presses and does actions accordingly
@@ -99,20 +104,35 @@ end
 
 --Handles player movement
 function Player:move()
-	self.rigid.body:setLinearVelocity(self.controller:getMoveX() * self.moveSpeed,
-																	  self.controller:getMoveY() * self.moveSpeed)
-	self.rigid.body:setPosition(
-		testScreenCollision(
-			self:getX(), self:getY(), self.ox, self.oy, self.sprite:getWidth(), self.sprite:getHeight()))
+	--Have to do this so velocity doesn't reset
+	local velX, velY = self.rigid.body:getLinearVelocity()
+	if self.controller:getMoveX() ~= 0 then
+		self.rigid.body:setLinearVelocity(
+											self.controller:getMoveX() * self.moveSpeed,
+											velY)
+  end
+
+	local velX, velY = self.rigid.body:getLinearVelocity()
+	if self.controller:getMoveY() ~= 0 then
+		self.rigid.body:setLinearVelocity(
+											velX,
+											self.controller:getMoveY() * self.moveSpeed)
+	end
+
+		self.rigid.body:setPosition(
+			testScreenCollision(
+				self:getX(), self:getY(), self.ox, self.oy, self.sprite:getWidth(), self.sprite:getHeight()))
 end
 
 --Handles weapon movement
-function Player:moveWeapon()
+function Player:updateWeapon()
 	if self.isSwinging then
 		self.weapon:setPosition((self:getX() + self.lookX) / 2,
 													  (self:getY() + self.lookY) / 2)
+		self.weapon:getRigidBody():setActive(true)
   else
 		self.weapon:setPosition(self:getX(), self:getY())
+		self.weapon:getRigidBody():setActive(false)
 	end
 end
 
@@ -187,33 +207,42 @@ function Player:manageStamina(dt)
 end
 
 function Player:draw()
-	--Setting player color (shader)
-	love.graphics.setShader(self.shader:getShader())
-	--Drawing player
-	love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
+		--Setting player color (shader)
+		love.graphics.setShader(self.shader:getShader())
+	if not self.dead then
+		--Drawing player
+		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
 
-	--Crosshair (for testing)
-	--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
+		--Crosshair (for testing)
+		--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
 
-	--Drawing weapon if swinging
-	if self.isSwinging then
-		self.weapon:draw()
+		--Drawing weapon if swinging
+		if self.isSwinging then
+			self.weapon:draw()
+		end
+	else
+		love.graphics.print(
+							{{255,0,0}, "R.I.P."}, self.deathX, self.deathY, 0, 2, 2)
 	end
 	--Removing shader
 	love.graphics.setShader()
-
-	--Drawing HP and SP bars
-	self:drawStatusBar(self.currHp, self.maxHp,
-										 self:getX() - HPBAR_WIDTH / 2 + 1,
-			 							 self:getY() - self.oy - HPBAR_YOFFSET,
-										 HPBAR_WIDTH, HPBAR_HEIGHT, COLOR_GREY, COLOR_RED)
-	self:drawStatusBar(self.currSp, self.maxHp,
-										 self:getX() - SPBAR_WIDTH / 2 + 1,
-									 	 self:getY() - self.oy - SPBAR_YOFFSET,
-									 	 SPBAR_WIDTH, SPBAR_HEIGHT, COLOR_YELLOW, COLOR_GREEN)
-	love.graphics.reset()
 end
 
+function Player:drawStatusBars()
+	if not self.dead then
+		love.graphics.reset()
+		--Drawing HP and SP bars
+		self:drawStatusBar(self.currHp, self.maxHp,
+											 self:getX() - HPBAR_WIDTH / 2 + 1,
+											 self:getY() - self.oy - HPBAR_YOFFSET,
+											 HPBAR_WIDTH, HPBAR_HEIGHT, COLOR_GREY, COLOR_RED)
+		self:drawStatusBar(self.currSp, self.maxHp,
+											 self:getX() - SPBAR_WIDTH / 2 + 1,
+											 self:getY() - self.oy - SPBAR_YOFFSET,
+											 SPBAR_WIDTH, SPBAR_HEIGHT, COLOR_YELLOW, COLOR_GREEN)
+		love.graphics.reset()
+	end
+end
 --For drawing Health and Stamina bars
 function Player:drawStatusBar(currFill, maxFill, x, y, width, height, backgroundColor, foregroundColor)
 	love.graphics.setColor(backgroundColor)
@@ -221,6 +250,16 @@ function Player:drawStatusBar(currFill, maxFill, x, y, width, height, background
 	love.graphics.setColor(foregroundColor)
 	if currFill > 0 then
 		love.graphics.rectangle("fill", x, y, width * currFill / maxFill, height ,5,5)
+	end
+end
+
+function Player:checkDeath()
+	--Check HP
+	self.dead =  self.currHp <= 0
+	--RIP
+	if self.dead then
+		self.deathX, self.deathY = self.rigid.body:getX(), self.rigid.body:getY()
+		 self.rigid.body:destroy()
 	end
 end
 
@@ -252,6 +291,10 @@ function Player:getController()
 	return self.controller
 end
 
-function Player:getXY(num)
-	print("Player "..num..": X = "..self:getX()..";  Y = "..self:getY())
+function Player:setCurrHp(hp)
+	self.currHp = hp
+end
+
+function Player:getCurrHp()
+	return self.currHp
 end

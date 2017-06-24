@@ -12,8 +12,8 @@ function Controller:new(joystick)
 
   --Table for deadzones
   self.deadZone = {
-    L = 0.23, --Left axis deadzone
-    R = 0.28  --Right axis deadzone
+    L = 0.1, --Left axis deadzone
+    R = 0.23  --Right axis deadzone
   }
 end
 

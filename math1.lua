@@ -26,6 +26,10 @@ function math.distance(x1, y1, x2, y2)
 end
 
 --Finds distance between 2 points
-function math.distance(dx, dy)
-	return math.sqrt(math.pow(dx, 2) + math.pow(dy, 2))
+function math.distance(x, y)
+	return math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+end
+
+function math.vectorAbs(x, y)
+	return math.distance(x, y)
 end

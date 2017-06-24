@@ -1,9 +1,13 @@
+--Libraries
 Object = require 'libraries/classic/classic'
+require 'libraries/HC'
 
+--
 require 'config'
 require 'math1'
 require 'physics'
 
+--Classes
 require 'objects/Player'
 require 'objects/Hammer'
 require 'objects/Controller'
@@ -38,6 +42,8 @@ function initConstants()
 	SWINGCOST = 20
 	MIN_SWING_STAMINA = 10
 	DASHCOST = 40 --used without dt (40% of max stamina)
+	HITMOD = 10 --used for hit damage modification
+	HIT_KNOCKBACK = 10000 --used for knockback modification
 
 	--Offests / Drawing Constants
 	HPBAR_HEIGHT = 8
@@ -77,7 +83,7 @@ function love.load()
 		local y = math.random(SPAWN_SAFEZONE, display.height - SPAWN_SAFEZONE)
 		--Creating player
 		local controller = Controller(joystick)
-		local weapon = Hammer(x, y, HAMMER_SPRITE, world, "P"..i.."H")
+		local weapon = Hammer(x, y, HAMMER_SPRITE, world, "H"..i)
 		local playerShader = PlayerShader(math.random(0, 255),	--Red
 																			math.random(0, 255),	--Green
 																			math.random(0, 255))	--Blue
@@ -93,7 +99,6 @@ function love.update(dt)
 		for i, player in ipairs(players) do
 			player:update(dt)
 		end
-		print(players[2].currSp)
 	end
 end
 
@@ -102,6 +107,7 @@ function love.draw()
 		drawBG(BG, 1.8, 1.8)
 		for i, player in ipairs(players) do
 			player:draw()
+			player:drawStatusBars()
 		end
 	end
 end
@@ -127,8 +133,42 @@ function checkPaused()
 	end
 	return PAUSED
 end
+
+--Knocks back the player and deals damage
+function hitPlayer(playerFixture, coll)
+	--Gets x and y of the collision force
+	local nx, ny = coll:getNormal()
+	--Knocks the Player back
+	playerFixture:getBody()
+									:applyLinearImpulse(nx * HIT_KNOCKBACK, ny * HIT_KNOCKBACK)
+  print(nx * HIT_KNOCKBACK.."  "..ny * HIT_KNOCKBACK)
+	--Player index
+	local i = tonumber(string.sub(playerFixture:getUserData(), 2, 2))
+	--Deals damage to the Player
+	players[i]:setCurrHp(
+		players[i]:getCurrHp() - math.vectorAbs(nx, ny) * HITMOD)
+	players[i]:checkDeath()
+end
+
 --Collisions
 function beginContact(a, b, coll)
+	--if "a" object is a hammer
+	if string.match(a:getUserData(), "H") then
+		if string.match(b:getUserData(), "P") then
+			print("a is hammer")
+			hitPlayer(b, coll)
+		elseif string.match(b:getUserData(), "H") then
+			--TODO parry
+		end
+	--if "b" object is a hammer
+	elseif string.match(b:getUserData(), "H") then
+		if string.match(a:getUserData(), "P") then
+			print("b is hammer")
+			hitPlayer(a, coll)
+		elseif string.match(a:getUserData(), "H") then
+			--parry
+		end
+	end
 end
 
 function endContact(a,b,coll)

@@ -4,8 +4,8 @@ function Hammer:new(posX, posY, sprite, world, userData)
   --Setting sprite
   self.sprite = sprite
   --Setting origin X and Y offsets
-  self.ox = 20--sprite:getWidth()/2
-  self.oy = 25--sprite:getHeight()/2
+  self.ox = sprite:getWidth()/2
+  self.oy = sprite:getHeight()/2
   --Rigidbody table
   self.rigid = {
     --Body
@@ -20,6 +20,7 @@ function Hammer:new(posX, posY, sprite, world, userData)
   --Fixture (attaches shape to body)
   self.rigid.fixture = love.physics.newFixture(self.rigid.body, self.rigid.shape)
   self.rigid.fixture:setUserData(userData) --For detecting collisions
+  --self.rigid.fixture:setSensor(true)
   --Setting position
   self.rigid.body:setPosition(posX, posY)
 end
