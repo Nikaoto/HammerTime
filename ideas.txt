@@ -1,6 +1,0 @@
-სიკვდილზე იზრდება - GOGO POWER RANGERS
-Deathmatch
-Powerups:
-  health regen
-  damage mod
-  size mod
