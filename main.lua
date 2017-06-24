@@ -1,6 +1,5 @@
 --Libraries
 Object = require 'libraries/classic/classic'
-require 'libraries/HC'
 
 --
 require 'config'
@@ -62,8 +61,21 @@ function initConstants()
 	PLAYER_SPRITE = love.graphics.newImage("/res/player.png")
 	HAMMER_SPRITE = love.graphics.newImage("/res/hammer.png")
 
+	--Sounds
 	backgroundMusic = love.audio.newSource("/res/bgmusic.mp3", "stream")
 	backgroundMusic:setLooping(true)
+
+	--Particles
+	PARTICLE_MIN_SPEED = 100
+	PARTICLE_MAX_SPEED = 1000
+	bloodParticle = love.graphics.newImage("/res/bloodParticle.png")
+	psystem = love.graphics.newParticleSystem(bloodParticle, 32)
+	psystem:setParticleLifetime(0.1, 0.9) -- Particles live at least 2s and at most 5s.
+	psystem:setSizeVariation(0.5)
+	psystem:setSpread(math.pi / 2)
+	local c = {255, 255, 255, 255}
+	local fade = {255, 255, 255, 0}
+	psystem:setColors(c, c, c, c, fade) -- Fade to transparency.
 end
 
 function love.load()
@@ -87,7 +99,8 @@ function love.load()
 		local playerShader = PlayerShader(math.random(0, 255),	--Red
 																			math.random(0, 255),	--Green
 																			math.random(0, 255))	--Blue
-		players[i] = Player(x, y, HP, SP, PLAYER_SPRITE, weapon, world, "P"..i, playerShader, controller)
+		players[i] = Player(x, y, HP, SP, PLAYER_SPRITE, weapon, world, "P"..i,
+		 										playerShader, controller, psystem:clone())
 		i = i + 1
 	end
 end
@@ -134,8 +147,8 @@ function checkPaused()
 	return PAUSED
 end
 
---Knocks back the player and deals damage
-function hitPlayer(playerFixture, coll)
+--Knocks back the player, deals damage, and shoots particles
+function hitPlayer(playerFixture, coll, otherFixture)
 	--Gets x and y of the collision force
 	local nx, ny = coll:getNormal()
 	--Knocks the Player back
@@ -144,6 +157,9 @@ function hitPlayer(playerFixture, coll)
   print(nx * HIT_KNOCKBACK.."  "..ny * HIT_KNOCKBACK)
 	--Player index
 	local i = tonumber(string.sub(playerFixture:getUserData(), 2, 2))
+	--Emitting particles
+	players[i]:emitParticles(PARTICLE_MIN_SPEED, PARTICLE_MAX_SPEED,
+													 45, otherFixture:getBody():getAngle())
 	--Deals damage to the Player
 	players[i]:setCurrHp(
 		players[i]:getCurrHp() - math.vectorAbs(nx, ny) * HITMOD)
@@ -156,7 +172,7 @@ function beginContact(a, b, coll)
 	if string.match(a:getUserData(), "H") then
 		if string.match(b:getUserData(), "P") then
 			print("a is hammer")
-			hitPlayer(b, coll)
+			hitPlayer(b, coll, a)
 		elseif string.match(b:getUserData(), "H") then
 			--TODO parry
 		end
@@ -164,7 +180,7 @@ function beginContact(a, b, coll)
 	elseif string.match(b:getUserData(), "H") then
 		if string.match(a:getUserData(), "P") then
 			print("b is hammer")
-			hitPlayer(a, coll)
+			hitPlayer(a, coll, a)
 		elseif string.match(a:getUserData(), "H") then
 			--parry
 		end

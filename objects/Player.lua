@@ -3,7 +3,8 @@ Player = Object:extend()
 require "physics"
 require "math1"
 
-function Player:new(posX, posY, hp, sp, sprite, weapon, world, userData, shader, controller)
+function Player:new(posX, posY, hp, sp, sprite, weapon,
+										world, userData, shader, controller, particleSys)
 	--Setting maximum and current Health and Stamina points
 	self.maxHp, self.currHp = hp, hp
 	self.maxSp, self.currSp = sp, sp
@@ -11,6 +12,7 @@ function Player:new(posX, posY, hp, sp, sprite, weapon, world, userData, shader,
 	self.controller = controller
 	self.weapon = weapon
 	self.shader = shader
+	self.particleSys = particleSys
 	--General variables
 	self.dead = false
 	self.isSwinging = false
@@ -58,6 +60,7 @@ function Player:update(dt)
 		self.controller:getInput()
 		self:checkControls()
 		self.shader:update()
+		self.particleSys:update(dt)
 		self:move()
 		self:updateWeapon()
 		self:rotate()
@@ -220,9 +223,16 @@ function Player:draw()
 		if self.isSwinging then
 			self.weapon:draw()
 		end
+
+		--Drawing particles
+		love.graphics.draw(self.particleSys, self:getX(), self:getY(),
+											 self.particleSys:getDirection(), 0.5, 0.5)
 	else
-		love.graphics.print(
-							{{255,0,0}, "R.I.P."}, self.deathX, self.deathY, 0, 2, 2)
+		love.graphics.print({{255,0,0},"R.I.P."}, self.deathX, self.deathY, 0, 2, 2)
+
+		--Drawing particles
+		love.graphics.draw(self.particleSys, self.deathX, self.deathY,
+											 self.particleSys:getDirection(), 0.5, 0.5)
 	end
 	--Removing shader
 	love.graphics.setShader()
@@ -259,10 +269,25 @@ function Player:checkDeath()
 	--RIP
 	if self.dead then
 		self.deathX, self.deathY = self.rigid.body:getX(), self.rigid.body:getY()
-		 self.rigid.body:destroy()
+		self:emitDeathParticles(PARTICLE_MIN_SPEED * 10, PARTICLE_MAX_SPEED * 18, 70, math.pi)
+		self.rigid.body:destroy()
 	end
 end
 
+function Player:emitDeathParticles(vMin, vMax, partNum, spread)
+	local prevSpread = self.particleSys:getSpread()
+	self.particleSys:setSpread(spread)
+	self.particleSys:setSpeed(vMin, vMax)
+	self.particleSys:emit(partNum)
+end
+
+function Player:emitParticles(vMin, vMax, partNum, rotation)
+	self.particleSys:setSpeed(vMin, vMax)
+	self.particleSys:setDirection(rotation)
+	self.particleSys:emit(partNum)
+end
+
+--Getters and Setters--
 function Player:getRotation()
 	return self.rigid.body:getAngle()
 end
