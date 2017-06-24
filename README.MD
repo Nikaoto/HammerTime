@@ -1,5 +1,5 @@
 #HammerTime
-A local multiplayer game made in Lua with LÖVE. Joysticks are a MUST!
+A local multiplayer game made in Lua with LÃ–VE. Joysticks are a MUST!
 Recommended players 2 and up (to infinity, as long as you can plug that many joysticks)
 
 ##Controls
@@ -22,4 +22,4 @@ The faster you swing, the more damage you deal (and the more you knock others ba
 *Sounds - yes.
 
 ##Final Notes
-Kind of ironic, a game of violence and murder made with LÖVE. heh.
+Kind of ironic, a game of violence and murder made with LÃ–VE. heh.
