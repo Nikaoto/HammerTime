@@ -1,112 +1,147 @@
 Player = Object:extend()
+
 require "physics"
 require "math1"
 
---self
-local s = {}
-
---Invisible crosshair location
-local lookX, lookY = 0, 0
-
-function Player:new(posX, posY, hp, sp, sprite, weapon, controller, world, userData, shader)
-	--Creating s metatable so I can type "s" instead of "self"
-	s = setmetatable(s, self)
-	self.__index = self
-
+function Player:new(posX, posY, hp, sp, sprite, weapon, world, userData, shader, controller)
 	--Setting maximum and current Health and Stamina points
-	s.maxHp, s.currHp = hp, hp
-	s.maxSp, s.currSp = sp, sp
+	self.maxHp, self.currHp = hp, hp
+	self.maxSp, self.currSp = sp, sp
 	--Injecting classes
-	s.controller = controller
-	s.weapon = weapon
-	s.shader = shader
+	self.controller = controller
+	self.weapon = weapon
+	self.shader = shader
 	--General variables
-	s.dead = false
-	s.isSwinging = false
-	s.moveSpeed = MOVESPEED
-	s.regenSp = SP_REGEN
-	s.sprite = sprite
+	self.dead = false
+	self.isSwinging = false
+	self.moveSpeed = MOVESPEED
+	self.regenSp = SP_REGEN
+	self.sprite = sprite
 	--Setting origin x and y
-	s.ox = s.sprtie:getWidth()/2
-	s.oy = s.sprite:getHeight()/2
+	self.ox = self.sprite:getWidth()/2
+	self.oy = self.sprite:getHeight()/2
+	--Setting look x and y
+	self.lookX = 0
+	self.lookY = 0
 	--Rigidbody table
-	s.rigid = {
+	self.rigid = {
 		--Rotation speed
 		rotSpeed = 0,
 		--Body
 		body = love.physics.newBody(world, posX, posY, "dynamic"),
 		--Circle Shape
-		shape = love.physics.newCircleShape(s.sprite.getWidth()/2,
-																				s.sprite.getHeight()/2),
-		--Fixture (attaches shape to body)
-		fixture = love.physics.newFixture(s.rigid.body, s.rigid.shape)
+		shape = love.physics.newCircleShape(self.oy)
 	}
 	--Setting Rigid values
-	s.rigid.body:setMass(45)
-	s.rigid.body:setLinearDamping(20)
-	s.rigid.body:setAngularDamping(10)
-	s.rigid.fixture:setUserData(userData) --Used for collisions
+	self.rigid.body:setMass(45)
+	self.rigid.body:setLinearDamping(20)
+	self.rigid.body:setAngularDamping(10)
+	--Fixture (attaches shape to body)
+	self.rigid.fixture = love.physics.newFixture(self.rigid.body, self.rigid.shape)
+	self.rigid.fixture:setUserData(userData) --Used for collisions
 	--Setting position
-	s.rigid.body:setPosition(posX, posY)
+	self.rigid.body:setPosition(posX, posY)
 	--Joining weapon and player
-	s.joint = love.physics.newFrictionJoint(s.rigid.body,
-																				  s.weapon.rigid.body,
-																				  s.ox,	--anchor X
-																				  s.oy,	--anchor Y
+	self.joint = love.physics.newFrictionJoint(self.rigid.body,
+																				  self.weapon:getRigidBody(),
+																				  self.ox,	--anchor X
+																				  self.oy,	--anchor Y
 																				  false)--They don't collide
+	--
 end
 
 function Player:update(dt)
-	s.controller:getInput()
-	s.shader:update()
-	s:move()
-	s:moveWeapon()
-	s:rotate()
-	s:rotateWeapon()
-	s.checkSwingSpeed(TICK)
-	s:manageStamina(dt)
+	self.controller:getInput()
+	self:checkControls()
+	self.shader:update()
+	self:move()
+	self:moveWeapon()
+	self:rotate()
+	self:rotateWeapon()
+	self:checkSwingSpeed(TICK)
+	self:manageStamina(dt)
+end
+
+--Checks for button presses and does actions accordingly
+function Player:checkControls()
+	--Checking if paused
+	if self:getController():checkPauseBtn() and not PAUSED then
+		PAUSED = true
+	else
+		PAUSED = false
+	end
+
+	--Checking if swinging (and has enough stamina to swing)
+	if not self:getController():checkSwingBtn() then
+		self.isSwinging = false
+	elseif self:checkEnoughStamina(MIN_SWING_STAMINA) then
+		self.isSwinging = true
+	end
+
+	--Setting movespeed according to swing status
+	if self.isSwinging then
+		self.moveSpeed = MOVESPEED_WHEN_SWINGING
+	else
+		self.moveSpeed = MOVESPEED
+	end
+	--Checking if dashing
+	if self:getController():checkDashBtn() and self:checkEnoughStamina(DASHCOST)
+	then
+		 --Player:dash()
+		 --TODO player dash
+	end
+
+end
+
+function Player:checkEnoughStamina(cost)
+	return self.currSp >= cost
 end
 
 --Handles player movement
 function Player:move()
-	s.rigid.body:setLinearVelocity(s.controller:getMoveX(), s.controller:getMoveY())
-	s.rigid.body:setPosition(
+	self.rigid.body:setLinearVelocity(self.controller:getMoveX() * self.moveSpeed,
+																	  self.controller:getMoveY() * self.moveSpeed)
+	self.rigid.body:setPosition(
 		testScreenCollision(
-			s:getX(), s:getY(), s.ox, s.oy, s.sprite:getWidth(), s.sprite:getHeight()
-		)
-	)
+			self:getX(), self:getY(), self.ox, self.oy, self.sprite:getWidth(), self.sprite:getHeight()))
 end
 
 --Handles weapon movement
 function Player:moveWeapon()
-	if s.isSwinging then
-		s.weapon:setPosition((s:getX() + lookX) / 2,
-												 (s:getY() + lookY) / 2)
+	if self.isSwinging then
+		self.weapon:setPosition((self:getX() + self.lookX) / 2,
+													  (self:getY() + self.lookY) / 2)
   else
-		s.weapon:setPosition(s:getX(), s:getY())
+		self.weapon:setPosition(self:getX(), self:getY())
 	end
 end
 
 --Handles player rotation
 function Player:rotate()
-	--Getting changes in look direction (sets invisible crosshair location)
-	lookX = s:getX() + s.controller:getLookX()
-	lookY = s:getY() + s.controller:getLookY()
+	--Get rotation
+	local rot = self:getController():getRotation(self:getX(),
+																							 self:getY(),
+																							 self.lookX,
+																							 self.lookY)
+
 	--Sets rigidbody rotation if player is rotating
-	s.rigid.body:setAngle(
-		s.controller:getRotation(
-			s:getX(),
-			s:getY(),
-			s.lookX,
-			s.lookY,
-			s.rigid.body:getAngle()
-		)
-	)
+	if rot then
+		self.rigid.body:setAngle(rot)
+	end
+
+	--Getting changes in look direction (sets invisible crosshair location)
+	local lx = self:getController():getLookX()
+	local ly = self:getController():getLookY()
+
+	--Applying if change detected
+	self.lookX = self:getX() + lx * LOOK_DISTANCE
+	self.lookY = self:getY() + ly * LOOK_DISTANCE
+	--print("lookX: "..self:getController():getLookX().."; lookY: "..self:getController():getLookY())
 end
 
 --Handles weapon rotation
 function Player:rotateWeapon()
-	s.weapon:setRotation(s:getRotation())
+	self.weapon:setRotation(self:getRotation())
 end
 
 function Player:checkSwingSpeed(interval)
@@ -115,73 +150,108 @@ function Player:checkSwingSpeed(interval)
 	--Set starting time
 	local time = love.timer.getTime()
 	--Save player rotation in radians
-	local rotA = s.rigid.body:getAngle()
+	local rotA = self.rigid.body:getAngle()
 	--Save weapon X and Y
-	local savedX = s.weapon:getX()
-	local savedY = s.weapon:getY()
+	local savedX = self.weapon:getX()
+	local savedY = self.weapon:getY()
 	--Check if time elapsed
 	if(time >= nextTick) then
 		--Calculate difference between saved and current positions
-		s.weapon.deltaX = savedX - s.weapon:getX()
-		s.weapon.deltaY = savedY - s.weapon:getY()
+		self.weapon.deltaX = savedX - self.weapon:getX()
+		self.weapon.deltaY = savedY - self.weapon:getY()
 		--Calculate difference between saved and current rotations in time
-		s.rigid.rotSpeed = (s.rigid.body:getAngle() - rotA) / interval
+		self.rigid.rotSpeed = (self.rigid.body:getAngle() - rotA) / interval
 		--Set next rotation check time
 		nextTick = time + interval;
 	end
 end
 
 function Player:manageStamina(dt)
-	if(s.weapon.isSwinging) then
+	if self:getController():checkSwingBtn() then
 		--Calculating swing distance for stamina loss
-		local sw = math.distance(s.weapon.deltaX, s.weapon.deltaY)
-		s.currSp = s.currSp - sw / SWING_COST_MOD
-		if s.currSp <=0 then
-			s.isSwinging = false
+		--local sw = math.distance(self.weapon.deltaX, self.weapon.deltaY)
+		--Reduce stamina
+		self.currSp = self.currSp - SWINGCOST * dt * 4
+
+		--Check in case of sp underflow
+		if self.currSp <= 0 then
+			self.isSwinging = false
+			self.currSp = 0
 		end
 	else
-		s.currSp = player1.currSp + dt * s.regenSp
+		--Regenerate stamina
+		self.currSp = self.currSp + dt * self.regenSp
 		--Check in case of Sp overflow
-		if s.currSp >= s.maxSp  then
-			s.currSp = s.maxSp
-		end
+		if self.currSp >= self.maxSp  then self.currSp = self.maxSp end
 	end
 end
 
 function Player:draw()
 	--Setting player color (shader)
-	love.graphics.setShader(s.shader)
+	love.graphics.setShader(self.shader:getShader())
 	--Drawing player
-	love.graphics.draw(s.sprite, s.getX(), s.getY(), s.rigid.body:getAngle(), 1, 1, s.ox, s.oy);
+	love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
+
+	--Crosshair (for testing)
+	--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
+
 	--Drawing weapon if swinging
-	if s.isSwinging then
-		s.weapon:draw()
+	if self.isSwinging then
+		self.weapon:draw()
 	end
 	--Removing shader
 	love.graphics.setShader()
+
+	--Drawing HP and SP bars
+	self:drawStatusBar(self.currHp, self.maxHp,
+										 self:getX() - HPBAR_WIDTH / 2 + 1,
+			 							 self:getY() - self.oy - HPBAR_YOFFSET,
+										 HPBAR_WIDTH, HPBAR_HEIGHT, COLOR_GREY, COLOR_RED)
+	self:drawStatusBar(self.currSp, self.maxHp,
+										 self:getX() - SPBAR_WIDTH / 2 + 1,
+									 	 self:getY() - self.oy - SPBAR_YOFFSET,
+									 	 SPBAR_WIDTH, SPBAR_HEIGHT, COLOR_YELLOW, COLOR_GREEN)
+	love.graphics.reset()
+end
+
+--For drawing Health and Stamina bars
+function Player:drawStatusBar(currFill, maxFill, x, y, width, height, backgroundColor, foregroundColor)
+	love.graphics.setColor(backgroundColor)
+	love.graphics.rectangle("fill", x, y, width, height, 4, 4)
+	love.graphics.setColor(foregroundColor)
+	if currFill > 0 then
+		love.graphics.rectangle("fill", x, y, width * currFill / maxFill, height ,5,5)
+	end
 end
 
 function Player:getRotation()
-	return s.rigid.body:getAngle()
+	return self.rigid.body:getAngle()
 end
 
 function Player:getX()
-	return s.rigid.body:getX()
+	return self.rigid.body:getX()
 end
 
 function Player:getY()
-	return s.rigid.body:getY()
+	return self.rigid.body:getY()
 end
 
 function Player:setX(x)
-	return s.rigid.body:setX(x)
+	return self.rigid.body:setX(x)
 end
 
 function Player:setY(y)
-	return s.rigid.body:setY(y)
+	return self.rigid.body:setY(y)
 end
 
 function Player:setPosition(x, y)
-	s.setX(x)
-	s.setY(y)
+	self.rigid.body:setPosition(x, y)
+end
+
+function Player:getController()
+	return self.controller
+end
+
+function Player:getXY(num)
+	print("Player "..num..": X = "..self:getX()..";  Y = "..self:getY())
 end

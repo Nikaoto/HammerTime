@@ -17,7 +17,7 @@ end
 
 --Finds tan between two points
 function math.angle(x1, y1, x2, y2)
-	return math.atan2(y2 - y1, x2 - x1) * (180 / math.pi) + 90
+	return math.rad(math.atan2(y2 - y1, x2 - x1) * (180 / math.pi) + 90)
 end
 
 --Finds distance between 2 points

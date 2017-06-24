@@ -1,24 +1,17 @@
 Controller = Object:extend()
 
-local s = {}
-
 function Controller:new(joystick)
-  --Metatable for shorter slef-reference
-  s = setmetatable(s, self)
-  self.__index = self
-
   --Joystick that controls the player
-  s.joystick = joystick
-
+  self.joystick = joystick
   --Table for button controls
-  s.btn = {
-    swing = 8,
+  self.btn = {
+    swing = 6,
     dash = 7,
     pause = 10
   }
 
   --Table for deadzones
-  s.deadZone = {
+  self.deadZone = {
     L = 0.23, --Left axis deadzone
     R = 0.28  --Right axis deadzone
   }
@@ -26,26 +19,13 @@ end
 
 function Controller:getInput()
   --Getting the axii
-  s.axisDir1, s.axisDir2, s.axisDir3, s.axisDir4 = s.joystick:getAxes()
-
---[[  --Moving invisible crosshair (used to calculate rotation angle)
-  if (abs(s.axisDir3) > s.deadZone.R) then  --checking deadzone
-    player1.ly = player1.y + s.axisDir3 * LOOK_ZONE;	--moving crosshair
-  else
-    player1.ly = player1.y;
-  end
-
-  if (abs(s.axisDir4) > s.deadZone.R) then  --checking deadzone
-    player1.lx = player1.x + s.axisDir4 * LOOK_ZONE;	--moving crosshair
-  else
-    player1.lx = player1.x;
-  end]]
+  self.axisDir1, self.axisDir2, self.axisDir3, self.axisDir4 = self.joystick:getAxes()
 end
 
 --Gets the change in X coordinate from axis
 function Controller:getMoveX()
-  local dx = s.axisDir1
-  if abs(dx) > s.deadZone.L then
+  local dx = self.axisDir1
+  if abs(dx) > self.deadZone.L then
     return dx
   else
     return 0
@@ -54,8 +34,8 @@ end
 
 --Gets the change in Y coordinate from axis
 function Controller:getMoveY()
-  local dy = s.axisDir2
-  if abs(dy) > s.deadZone.L then
+  local dy = self.axisDir2
+  if abs(dy) > self.deadZone.L then
     return dy
   else
     return 0
@@ -64,8 +44,8 @@ end
 
 --Gets the change in looking X direction
 function Controller:getLookX()
-  local lx = s.axisDir4
-  if abs(lx) > s.deadZone.R then
+  local lx = self.axisDir4
+  if abs(lx) > self.deadZone.R then
     return lx
   else
     return 0
@@ -74,8 +54,8 @@ end
 
 --Gets the change in looking Y direction
 function Controller:getLookY()
-  local ly = s.axisDir3
-  if abs(ly) > s.deadZone.R then
+  local ly = self.axisDir3
+  if abs(ly) > self.deadZone.R then
     return ly
   else
     return 0
@@ -83,10 +63,29 @@ function Controller:getLookY()
 end
 
 --Gets rotation (if no rotation is occuring, returns the same value)
-function Controller:getRotation(x, y, lx, ly, defaultRot)
+function Controller:getRotation(x, y, lx, ly)
   --Checking deadzones
-  if abs(s.axisDir4) > s.deadZone.R or abs(s.axisDir3) > s.deadZone.R then
+  if abs(self.axisDir4) > self.deadZone.R or abs(self.axisDir3) > self.deadZone.R then
     return math.angle(x, y, lx, ly);
   end
-  return defaultRot
+end
+
+function Controller:passedDeadZone(axis, deadzone)
+	return abs(axis) > deadzone
+end
+
+function Controller:checkSwingBtn()
+    return self.joystick:isDown(self.btn.swing)
+end
+
+function Controller:checkDashBtn()
+    return self.joystick:isDown(self.btn.dash)
+end
+
+function Controller:checkPauseBtn()
+  return self.joystick:isDown(self.btn.pause)
+end
+
+function Controller:getJoystick()
+  return self.joystick
 end

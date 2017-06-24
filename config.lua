@@ -2,10 +2,11 @@ display = {
   width = 1024,
   height = 800,
   settings = {
+    fullscreen = false,
     resizable = false,
     vsync = false,
-    borderless = true,
+    borderless = false,
     centered = true,
-    display = 1
+    display = 2
   }
 }
