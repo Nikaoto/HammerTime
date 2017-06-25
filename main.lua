@@ -8,7 +8,7 @@ require 'physics'
 require 'welcomescreen'
 require 'bloomShader'
 require 'helmetmanager'
---require 'cloudmanager'
+require 'cloudmanager'
 
 --Classes
 require 'objects/Player'
@@ -16,6 +16,8 @@ require 'objects/Hammer'
 require 'objects/Controller'
 require 'objects/PlayerShader'
 
+font = love.graphics.newFont("/res/junegull.ttf", 28)
+bigFont = love.graphics.newFont("/res/junegull.ttf", 50)
 players = {}
 GAME_STARTED = false
 
@@ -23,16 +25,27 @@ GAME_STARTED = false
 love.window.setMode(display.width, display.height, display.settings)
 love.window.setTitle("Hammer Time")
 
+--Sounds
+hitSound = love.audio.newSource("/res/hit.ogg", "static")
+dodgeSounds = {}
+dodgeSounds[1] = love.audio.newSource("/res/dodge1.ogg", "static")
+dodgeSounds[2] = love.audio.newSource("/res/dodge2.ogg", "static")
 
+deathSounds = {}
+deathSounds[1] = love.audio.newSource("/res/death1.ogg", "static")
+deathSounds[2] = love.audio.newSource("/res/death2.ogg", "static")
+deathSounds[3] = love.audio.newSource("/res/death3.ogg", "static")
 --Background Music
-backgroundMusic = love.audio.newSource("/res/bgmusic.mp3", "stream")
+backgroundMusic = love.audio.newSource("/res/bgmusic.ogg", "stream")
 backgroundMusic:setLooping(true)
-skyBG = love.graphics.newImage("/res/sky2.png")
+skyBG = love.graphics.newImage("/res/sky.png")
+skyBG2 = love.graphics.newImage("/res/sky2.png")
 
  local grassScaleX = 1
  local grassScaleY = 1
 
 function love.load()
+    initClouds()
 		loadWelcomeScreen()
 		backgroundMusic:play()
 end
@@ -44,7 +57,9 @@ function initWorld()
 	grassTile:setWrap("repeat", "repeat")
 	dirtTile = love.graphics.newImage("/res/dirtTile.png")
 	dirtTile:setWrap("repeat", "clampzero")
-	skyBG = love.graphics.newImage("/res/sky.png")
+  newPillar = love.graphics.newImage("/res/newPillar.png")
+  asd = love.graphics.newImage("/res/asd.png")
+
 	--fullBG = love.graphics.newImage("/res/bg.png")
 	--BG = love.graphics.newImage("/res/background1.png")
 	--BG:setWrap("repeat","repeat")
@@ -52,7 +67,7 @@ end
 
 function initConstants()
 	--Meta Constants
-	SPAWN_SAFEZONE = 80
+	SPAWN_SAFEZONE = 180
   PLAYER_RADIUS = 30
 
 	--Gameplay Constatns
@@ -60,10 +75,11 @@ function initConstants()
 	MOVESPEED_WHEN_SWINGING = 190
 	HP = 100
 	SP = 100
-  TOTAL_KILLCOUNT = 30
+  MAX_KILLCOUNT = 2
+  totalKills = 0
   DEATH_TIME = 4
 
-	FALL_LIMIT_TOP = 40
+	FALL_LIMIT_TOP = 60
 	FALL_LIMIT_BOTTOM = 60
 	FALL_LIMIT_LEFT = 50
 	FALL_LIMIT_RIGHT = 50
@@ -77,6 +93,7 @@ function initConstants()
 	SWINGCOST = 20
 	MIN_SWING_STAMINA = 10
 	DASHCOST = 50 --used without dt (40% of max stamina)
+	DASHCOST2 = 60 --used without dt (40% of max stamina)
 	HITMOD = 10 --used for hit damage modification
 	HIT_KNOCKBACK = 10000 --used for knockback modification
 
@@ -96,7 +113,7 @@ function initConstants()
 	--Sprites & Textures
 	LOOK_SPRITE = love.graphics.newImage("/res/aim.png")
 	PLAYER_SPRITE = love.graphics.newImage("/res/player.png")
-	HAMMER_SPRITE = love.graphics.newImage("/res/hammer.png")
+	HAMMER_SPRITE = love.graphics.newImage("/res/hammer3.png")
 
 	--Pillar drawing space
 	pillarQuad = love.graphics.newQuad(0, 0,
@@ -171,26 +188,43 @@ function love.update(dt)
 	else updateWelcomeScreen(dt) end
 end
 
+function drawEnd()
+  love.graphics.setBackgroundColor(255, 0, 0, 255)
+  love.graphics.setColor(0, 0,0,255)
+  love.graphics.print("Thanks for playing! :) \nOne of you had more kills than all the others,\nbut because this game is made with LOVE,\nyou all win <3")
+  love.graphics.setColor(255,255,255,255)
+
+end
+
 function love.draw()
 	if GAME_STARTED then
-		--Drawing Background Items
-		--drawBG(BG, 1.8, 1.8)
-		drawSky()
-		drawPillar()
-		drawPillarShadow()
-		drawGrass()
-		for i, player in ipairs(players) do
-			player:drawParticles()
-		end
-		for i, player in ipairs(players) do
-			player:draw()
-			player:drawStatusBars()
-		end
+    if MAX_KILLCOUNT == totalKills then
+      drawEnd()
+    else
+  		--Drawing Background Items
+  		--drawBG(BG, 1.8, 1.8)
+  		drawSky(skyBG)
+  		drawPillar()
+  		drawPillarShadow()
+  		drawGrass()
+  		for i, player in ipairs(players) do
+  			player:drawParticles()
+  		end
+  		for i, player in ipairs(players) do
+  			player:draw()
+  			player:drawStatusBars()
+  		end
+      drawTotalKills()
+    end
 	else drawWelcomeScreen() end
 end
 
-function drawSky()
-	love.graphics.draw(skyBG, 0, 0, 0, display.width / skyBG:getWidth(), display.height / skyBG:getHeight())
+function drawNewPillar(img, xscale)
+  love.graphics.draw(img, (display.width - img:getWidth() * xscale) /2, display.height/10, 0, xscale, 1)
+end
+
+function drawSky(img)
+	love.graphics.draw(img, 0, 0, 0, display.width / skyBG:getWidth(), display.height / skyBG:getHeight())
 end
 
 function drawPillar()
@@ -201,7 +235,7 @@ end
 
 function drawPillarShadow()
 	love.graphics.setBlendMode('subtract')
-	love.graphics.setColor(200, 200, 200, 50)
+	love.graphics.setColor(200, 200, 200, 20)
 	love.graphics.rectangle('fill',
 		FALL_LIMIT_LEFT, display.height - FALL_LIMIT_BOTTOM,
 		display.width - FALL_LIMIT_RIGHT - FALL_LIMIT_LEFT, FALL_LIMIT_BOTTOM/1.5)
@@ -210,8 +244,7 @@ end
 
 --local grassDrawRot = -90
 function drawGrass()
-	--[[local rot = 0
-	for x = FALL_LIMIT_LEFT, display.width - FALL_LIMIT_RIGHT, grassTile:getWidth() * grassScaleX do
+--[[	for x = FALL_LIMIT_LEFT, display.width - FALL_LIMIT_RIGHT, grassTile:getWidth() * grassScaleX do
 		for y = FALL_LIMIT_TOP, display.height - FALL_LIMIT_BOTTOM - grassTile:getHeight(), grassTile:getHeight() * grassScaleY do
 			love.graphics.draw(grassTile, x + grassTile:getWidth()/2, y + grassTile:getHeight()/2, rot, grassScaleX, grassScaleY, grassTile:getWidth()/2, grassTile:getHeight()/2)
 		end
@@ -227,6 +260,14 @@ end
 		end
 	end
 end]]
+
+function drawTotalKills()
+  love.graphics.setColor( 0,0,0,255)
+  love.graphics.setFont(bigFont)
+  love.graphics.print(MAX_KILLCOUNT - totalKills.." KILLS REMAINING",
+        (display.width - 400)/2, 40)
+  love.graphics.setColor(255, 255, 255, 255)
+end
 
 function love.keypressed(key)
 	if key == "escape" then
@@ -249,11 +290,12 @@ end]]
 
 --Knocks back the player, deals damage, and shoots particles
 function hitPlayer(playerFixture, coll, otherFixture)
+  love.audio.play(hitSound)
 	--Gets x and y of the collision force
 	local nx, ny = coll:getNormal()
   --Player index
 	local i = tonumber(string.sub(playerFixture:getUserData(), 2, 2))
-
+  local hitter = tonumber(string.sub(otherFixture:getUserData(), 2, 2))
   if not players[i].isDashing then
 	--Knocks the Player back
 	playerFixture:getBody()

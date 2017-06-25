@@ -11,8 +11,8 @@ function Hammer:new(posX, posY, sprite, world, userData)
     --Body
     body = love.physics.newBody(world, posX, posY, "dynamic"),
     --Rectangle Shape
-    shape = love.physics.newRectangleShape(self.sprite:getWidth(),
-                                          self.sprite:getHeight())
+    shape = love.physics.newRectangleShape(self.sprite:getWidth()*0.8,
+                                          self.sprite:getHeight()*0.9)
     --fixture
   }
   self.rigid.body:setMass(0)
@@ -29,12 +29,8 @@ function Hammer:getRigidBody()
   return self.rigid.body
 end
 
-function Hammer:updatePosition(dt)
-  --TODO udpate pos
-end
-
 function Hammer:draw()
-  love.graphics.draw(self.sprite, self:getX(), self:getY(), self.rigid.body:getAngle(), 1, 1, self.ox, self.oy)
+  love.graphics.draw(self.sprite, self:getX(), self:getY(), self.rigid.body:getAngle(), 0.5, 0.5, self.ox, self.oy)
 end
 
 function Hammer:setRotation(radians)

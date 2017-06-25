@@ -80,18 +80,21 @@ function Player:init()
 end
 
 function Player:die(sentFromOutside)
+	totalKills = totalKills + 1
 	self.dead = true
 	self.deathTimer = love.timer.getTime() + DEATH_TIME
 	self.deathX, self.deathY = self:getX(), self:getY()
 	self.rigid.body:setLinearVelocity(0,0)
 	if not sentFromOutside then
 		self.rigid.body:setActive(false)
+		self.weapon:getRigidBody():setActive(false)
 	end
 end
 
 function Player:respawn()
 	math.randomseed(os.time())
 	self.rigid.body:setActive(true)
+	self.weapon:getRigidBody():setActive(true)
 	self.rigid.body:setLinearVelocity(0, 0)
 	self.rigid.body:setPosition(
 		math.random(SPAWN_SAFEZONE, display.width - SPAWN_SAFEZONE),
@@ -164,8 +167,8 @@ function Player:checkControls()
 		self.moveSpeed = MOVESPEED
 	end
 	--Checking if dashing
-	if self:getController():checkDashBtn() and self:checkEnoughStamina(DASHCOST)
-		then
+	if self:getController():checkDashBtn() and self:checkEnoughStamina(DASHCOST2)
+			and not self.isDashing then
 		self:dash(0.1)
 	end
 end
@@ -175,9 +178,10 @@ function Player:checkEnoughStamina(cost)
 end
 
 function Player:dash(time)
+	love.audio.play(dodgeSounds[math.random(1, 2)])
+	self.currSp = self.currSp - DASHCOST
 	self.isDashing = true
 	self.dashTime = time + love.timer.getTime()
-	self.currSp = self.currSp - DASHCOST
 end
 
 --Handles player movement
@@ -264,11 +268,6 @@ function Player:draw()
 		love.graphics.setShader(self.shader:getShader()) --TODO Blur shader here
 	end
 	if not self.dead then
-		--Drawing player
-		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 0.75, 0.70, self.ox, self.oy);
-		--Crosshair (for testing)
-		--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
-
 		--Drawing weapon if swinging
 		if self.isSwinging then
 			--Setting player color (shader)
@@ -276,9 +275,17 @@ function Player:draw()
 			self.weapon:draw()
 			love.graphics.setShader()
 		end
+
+		--Drawing player
+		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 0.75, 0.70, self.ox, self.oy);
+		--Crosshair (for testing)
+		--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
 	else
+		love.graphics.setColor(0, 0, 0, 255)
+		love.graphics.setFont(font)
 		love.graphics.print("Respawning in "..round(self.deathTimer - love.timer.getTime()).." seconds",
-			self.deathX, self.deathY, 0, 1, 1)
+			self.deathX, self.deathY)
+		love.graphics.setColor(255, 255, 255, 255)
 	end
 	--Removing shader
 	love.graphics.setShader()
@@ -324,6 +331,7 @@ function Player:checkDeath(sentfromoutside)
 	end
 	--Check HP
 	if self.currHp <= 0 and not self.dead then
+		love.audio.play(deathSounds[math.random(1, 3)])
 		self.dead = true
 		self.deathX, self.deathY = self.rigid.body:getX(), self.rigid.body:getY()
 		self:emitDeathParticles(PARTICLE_MIN_SPEED * 10, PARTICLE_MAX_SPEED * 15, 90, math.pi * 2)

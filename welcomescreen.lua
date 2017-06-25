@@ -1,3 +1,4 @@
+require 'cloudmanager'
 local TAU = math.pi * 2
 local screenWidth, screenHeight = display.width, display.height
 --local screenWidth, screenHeight = love.graphics:getDimensions()
@@ -55,11 +56,13 @@ end
 
 
 function updateWelcomeScreen(dt)
+  updateClouds(dt)
   for i=1,2 do pe[i]:update(dt) end
 end
 
 function drawWelcomeScreen()
-  drawSky()
+  drawSky(skyBG2)
+  drawClouds()
   canvas:renderTo(function()
     --love.graphics.clear(0,0,0,0.01)
     love.graphics.setBlendMode('subtract', 'premultiplied')
