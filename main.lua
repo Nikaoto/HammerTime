@@ -59,6 +59,7 @@ function initWorld()
 	dirtTile:setWrap("repeat", "clampzero")
   newPillar = love.graphics.newImage("/res/newPillar.png")
   asd = love.graphics.newImage("/res/asd.png")
+  brejk = love.graphics.newImage("/res/brejk.png")
 
 	--fullBG = love.graphics.newImage("/res/bg.png")
 	--BG = love.graphics.newImage("/res/background1.png")
@@ -204,9 +205,10 @@ function love.draw()
   		--Drawing Background Items
   		--drawBG(BG, 1.8, 1.8)
   		drawSky(skyBG)
-  		drawPillar()
-  		drawPillarShadow()
-  		drawGrass()
+  		--drawPillar()
+  		--drawPillarShadow()
+      drawNewPillar(brejk, 1.30)
+  		--drawGrass()
   		for i, player in ipairs(players) do
   			player:drawParticles()
   		end
@@ -220,7 +222,7 @@ function love.draw()
 end
 
 function drawNewPillar(img, xscale)
-  love.graphics.draw(img, (display.width - img:getWidth() * xscale) /2, display.height/10, 0, xscale, 1)
+  love.graphics.draw(img, (display.width - img:getWidth() * xscale) /2, FALL_LIMIT_TOP-10, 0, xscale, 0.90)
 end
 
 function drawSky(img)
@@ -251,6 +253,7 @@ function drawGrass()
 	end]]
 	love.graphics.setShader(bloomShader)
 	love.graphics.draw(grassTile, grassQuad, FALL_LIMIT_LEFT, FALL_LIMIT_TOP)
+  love.graphics.setShader()
 end
 
 --[[function drawBG(bg, scaleX, scaleY)
@@ -265,7 +268,7 @@ function drawTotalKills()
   love.graphics.setColor( 0,0,0,255)
   love.graphics.setFont(bigFont)
   love.graphics.print(MAX_KILLCOUNT - totalKills.." KILLS REMAINING",
-        (display.width - 400)/2, 40)
+        (display.width - 400)/2, 10)
   love.graphics.setColor(255, 255, 255, 255)
 end
 
