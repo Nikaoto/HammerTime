@@ -7,6 +7,8 @@ local MS = 1
 local PSIZE = 40
 
 function loadWelcomeScreen()
+  titleImage = love.graphics.newImage("/res/title.png")
+
   love.graphics.setDefaultFilter('linear', 'linear', 4)
 
   --local p = love.graphics.newImage "particle.png"
@@ -32,7 +34,7 @@ function loadWelcomeScreen()
     pe[i]:setSizes(1.5, 0.6)
     --pe:setSizeVariation(1)
     pe[i]:setLinearAcceleration(-10, -10, 10, 10) -- Random movement in all directions.
-    pe[i]:setLinearDamping(2)
+    pe[i]:setLinearDamping(3)
     --pe:setColors(255, 255, 255, 255, 255, 255, 255, 0) -- Fade to transparency.
     pe[i]:setAreaSpread('uniform', screenWidth / 2, 0)
     --pe:setDirection(3/4 * TAU)
@@ -57,11 +59,11 @@ function updateWelcomeScreen(dt)
 end
 
 function drawWelcomeScreen()
-
+  drawSky()
   canvas:renderTo(function()
     --love.graphics.clear(0,0,0,0.01)
     love.graphics.setBlendMode('subtract', 'premultiplied')
-    love.graphics.setColor(40, 20, 10, 90)
+    love.graphics.setColor(4, 20, 1, 10)
     love.graphics.rectangle('fill', 0, 0, screenWidth * MS, screenHeight * MS)
 
     love.graphics.setColor(255,255,255,255)
@@ -78,5 +80,6 @@ function drawWelcomeScreen()
   love.graphics.draw(canvas, 0, 0, 0, 1/MS, 1/MS)
 
 --draw PRESS ANY KEY TO START GAME
-  --DRAW TITLE (HAMMERTIME)
+  love.graphics.draw(titleImage,
+    (display.width - titleImage:getWidth()) / 2, 100)
 end

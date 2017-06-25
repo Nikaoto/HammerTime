@@ -5,38 +5,31 @@ require "math1"
 
 function Player:new(posX, posY, hp, sp, sprite, weapon,
 										world, userData, shader, controller, particleSys)
-	--Setting maximum and current Health and Stamina points
-	self.maxHp, self.currHp = hp, hp
-	self.maxSp, self.currSp = sp, sp
+	--Setting maximum Health and Stamina points
+	self.maxHp, self.maxSp =  hp, hp
 	--Injecting classes
 	self.controller = controller
 	self.weapon = weapon
 	self.shader = shader
 	self.particleSys = particleSys
-	--General variables
-	self.dead = false
-	self.isSwinging = false
-	self.moveSpeed = MOVESPEED
-	self.regenSp = SP_REGEN
+
+	--Origin X and Y with sprite
 	self.sprite = sprite
-	self.isStunned = false
-	self.isDashing = false
-	--self.dashPressed = false
-	--Setting origin x and y
 	self.ox = self.sprite:getWidth()/2
 	self.oy = self.sprite:getHeight()/2
-	--Setting look x and y
-	self.lookX = 0
-	self.lookY = 0
+
 	--Setting death x and y
 	self.deathX = 0
 	self.deathY = 0
+
 	--Setting particle x and y
 	self.partX = 0
 	self.partY = 0
-	--Dash destination x and y
-	self.dashDestX = 0
-	self.dashDestY = 0
+
+	self.killCount = 0
+	self.deathCount = 0
+
+	self:init()
 
 	--Rigidbody table
 	self.rigid = {
@@ -45,7 +38,7 @@ function Player:new(posX, posY, hp, sp, sprite, weapon,
 		--Body
 		body = love.physics.newBody(world, posX, posY, "dynamic"),
 		--Circle Shape
-		shape = love.physics.newCircleShape(self.oy)
+		shape = love.physics.newCircleShape(PLAYER_RADIUS)
 	}
 	--Setting Rigid values
 	self.rigid.body:setMass(45)
@@ -65,6 +58,52 @@ function Player:new(posX, posY, hp, sp, sprite, weapon,
 	--
 end
 
+function Player:init()
+	--Setting maximum and current Health and Stamina points
+	self.currHp, self.currSp = self.maxHp, self.maxSp
+
+	--General variables
+	self.moveSpeed = MOVESPEED
+	self.regenSp = SP_REGEN
+	self.dead = false
+	self.isSwinging = false
+	self.isStunned = false
+	self.isDashing = false
+
+	--Setting look x and y
+	self.lookX = 0
+	self.lookY = 0
+
+	self.deathTimer = -1
+
+	self.particleSys:setSpeed(DEFAULT_BLOOD_PARTICLE_SPREAD)
+end
+
+function Player:die(sentFromOutside)
+	self.dead = true
+	self.deathTimer = love.timer.getTime() + DEATH_TIME
+	self.deathX, self.deathY = self:getX(), self:getY()
+	self.rigid.body:setLinearVelocity(0,0)
+	if not sentFromOutside then
+		self.rigid.body:setActive(false)
+	end
+end
+
+function Player:respawn()
+	math.randomseed(os.time())
+	self.rigid.body:setActive(true)
+	self.rigid.body:setLinearVelocity(0, 0)
+	self.rigid.body:setPosition(
+		math.random(SPAWN_SAFEZONE, display.width - SPAWN_SAFEZONE),
+		math.random(SPAWN_SAFEZONE, display.height - SPAWN_SAFEZONE))
+	self:init()
+	--Play spawn animation (or display text)
+end
+
+function Player:playSpawnAnimation()
+	--Maybe?
+end
+
 function Player:checkStunStatus(limit)
 	if self.rigid.body:getLinearVelocity() <= limit then
 		self.isStunned = false
@@ -80,13 +119,11 @@ function Player:manageDashing()
 end
 
 function Player:update(dt)
+	self:checkDeath()
 	if not self.dead then
 		self.controller:getInput()
 		self:checkControls()
 		self.shader:update()
-		self.particleSys:update(dt)
-		self:manageStamina(dt)
-		self:manageDashing()
 		if not self.isStunned then
 			self:move()
 			if not self.isDashing then
@@ -99,7 +136,14 @@ function Player:update(dt)
 			self:checkStunStatus(10)
 			self.isSwinging = false
 		end
+
+		if self:fellDown() then
+			self:die()
+		end
 	end
+		self.particleSys:update(dt)
+		self:manageStamina(dt)
+		self:manageDashing()
 end
 
 --Checks for button presses and does actions accordingly
@@ -153,9 +197,7 @@ function Player:move()
 											self.controller:getMoveY() * self.moveSpeed)
 	end
 
-		self.rigid.body:setPosition(
-			testScreenCollision(
-				self:getX(), self:getY(), self.ox, self.oy, self.sprite:getWidth(), self.sprite:getHeight()))
+	self.rigid.body:setPosition(self:getX(), self:getY())
 end
 
 --Handles weapon movement
@@ -190,34 +232,11 @@ function Player:rotate()
 	--Applying if change detected
 	self.lookX = self:getX() + lx * LOOK_DISTANCE
 	self.lookY = self:getY() + ly * LOOK_DISTANCE
-	--print("lookX: "..self:getController():getLookX().."; lookY: "..self:getController():getLookY())
 end
 
 --Handles weapon rotation
 function Player:rotateWeapon()
 	self.weapon:setRotation(self:getRotation())
-end
-
-function Player:checkSwingSpeed(interval)
-	--Set interval counter
-	local nextTick = interval
-	--Set starting time
-	local time = love.timer.getTime()
-	--Save player rotation in radians
-	local rotA = self.rigid.body:getAngle()
-	--Save weapon X and Y
-	local savedX = self.weapon:getX()
-	local savedY = self.weapon:getY()
-	--Check if time elapsed
-	if(time >= nextTick) then
-		--Calculate difference between saved and current positions
-		self.weapon.deltaX = savedX - self.weapon:getX()
-		self.weapon.deltaY = savedY - self.weapon:getY()
-		--Calculate difference between saved and current rotations in time
-		self.rigid.rotSpeed = (self.rigid.body:getAngle() - rotA) / interval
-		--Set next rotation check time
-		nextTick = time + interval;
-	end
 end
 
 function Player:manageStamina(dt)
@@ -250,7 +269,6 @@ function Player:draw()
 	if not self.dead then
 		--Drawing player
 		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
-
 		--Crosshair (for testing)
 		--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
 
@@ -259,7 +277,8 @@ function Player:draw()
 			self.weapon:draw()
 		end
 	else
-		love.graphics.print({{255,0,0},"R.I.P."}, self.deathX, self.deathY, 0, 2, 2)
+		love.graphics.print("Respawning in "..round(self.deathTimer - love.timer.getTime()).." seconds",
+			self.deathX, self.deathY, 0, 1, 1)
 	end
 	--Removing shader
 	love.graphics.setShader()
@@ -299,19 +318,20 @@ function Player:drawStatusBar(currFill, maxFill, x, y, width, height, background
 	end
 end
 
-function Player:checkDeath()
+function Player:checkDeath(sentfromoutside)
+	if self.deathTimer <= love.timer.getTime() and self.deathTimer ~= -1 then
+		self:respawn()
+	end
 	--Check HP
-	self.dead =  self.currHp <= 0
-	--RIP
-	if self.dead then
+	if self.currHp <= 0 and not self.dead then
+		self.dead = true
 		self.deathX, self.deathY = self.rigid.body:getX(), self.rigid.body:getY()
 		self:emitDeathParticles(PARTICLE_MIN_SPEED * 10, PARTICLE_MAX_SPEED * 15, 90, math.pi * 2)
-		self.rigid.body:destroy()
+		self:die(sentfromoutside)
 	end
 end
 
 function Player:emitDeathParticles(vMin, vMax, partNum, spread)
-	--local prevSpread = self.particleSys:getSpread()
 	self.particleSys:setSpread(spread)
 	self.particleSys:setSpeed(vMin, vMax)
 	self.particleSys:setDirection(math.random(0, math.pi * 2))
@@ -323,6 +343,17 @@ function Player:emitParticles(vMin, vMax, partNum, rotation)
 	self.particleSys:setSpeed(vMin, vMax)
 	self.particleSys:setDirection(rotation)
 	self.particleSys:emit(partNum)
+end
+
+function Player:fellDown()
+		if self:getX() < FALL_LIMIT_LEFT or self:getX() > display.width - FALL_LIMIT_RIGHT then
+			return true
+		end
+
+		if self:getY() < FALL_LIMIT_TOP or self:getY() > display.height - FALL_LIMIT_BOTTOM then
+			return true
+		end
+		return false
 end
 
 --Getters and Setters--

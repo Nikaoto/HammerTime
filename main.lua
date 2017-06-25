@@ -26,7 +26,7 @@ love.window.setTitle("Hammer Time")
 --Background Music
 backgroundMusic = love.audio.newSource("/res/bgmusic.mp3", "stream")
 backgroundMusic:setLooping(true)
-
+skyBG = love.graphics.newImage("/res/sky2.png")
 
  local grassScaleX = 1
  local grassScaleY = 1
@@ -51,14 +51,17 @@ end
 
 function initConstants()
 	--Meta Constants
-	--PAUSED = false
-	SPAWN_SAFEZONE = 20
+	SPAWN_SAFEZONE = 80
+  PLAYER_RADIUS = 30
 
 	--Gameplay Constatns
 	MOVESPEED = 400
 	MOVESPEED_WHEN_SWINGING = 190
 	HP = 100
 	SP = 100
+  TOTAL_KILLCOUNT = 30
+  DEATH_TIME = 4
+
 	FALL_LIMIT_TOP = 40
 	FALL_LIMIT_BOTTOM = 60
 	FALL_LIMIT_LEFT = 50
@@ -87,6 +90,7 @@ function initConstants()
 	COLOR_RED = {255, 0, 0}
 	COLOR_YELLOW = {255, 255, 0}
 	COLOR_GREY = {140, 140, 140, 160}
+  DEFAULT_BLOOD_PARTICLE_SPREAD = math.pi / 2
 
 	--Sprites & Textures
 	LOOK_SPRITE = love.graphics.newImage("/res/aim.png")
@@ -111,7 +115,7 @@ function initConstants()
 	psystem = love.graphics.newParticleSystem(bloodParticle, 64)
 	psystem:setParticleLifetime(0.1, 0.5)
 	psystem:setSizeVariation(0.5)
-	psystem:setSpread(math.pi / 2)
+	psystem:setSpread(DEFAULT_BLOOD_PARTICLE_SPREAD)
 	local c = {255, 255, 255, 255}
 	local fade = {255, 255, 255, 0}
 	psystem:setColors(c, c, c, c, c, c, fade) -- Fade to transparency.
@@ -245,6 +249,10 @@ function hitPlayer(playerFixture, coll, otherFixture)
 	--Knocks the Player back
 	playerFixture:getBody()
 									:applyLinearImpulse(nx * HIT_KNOCKBACK, ny * HIT_KNOCKBACK)
+
+  --Deals damage to the Player
+	players[i]:setCurrHp(
+		players[i]:getCurrHp() - math.vectorAbs(nx, ny) * HITMOD)
   end
 
 	local x1, y1, x2, y2 = coll:getPositions()
@@ -254,11 +262,8 @@ function hitPlayer(playerFixture, coll, otherFixture)
 	--Emitting particles
 	players[i]:emitParticles(PARTICLE_MIN_SPEED, PARTICLE_MAX_SPEED,
 													 45, otherFixture:getBody():getAngle())
-	--Deals damage to the Player
-	players[i]:setCurrHp(
-		players[i]:getCurrHp() - math.vectorAbs(nx, ny) * HITMOD)
 	players[i].isStunned = true
-	players[i]:checkDeath()
+	players[i]:checkDeath(true)
 end
 
 --Collisions
@@ -266,7 +271,6 @@ function beginContact(a, b, coll)
 	--if "a" object is a hammer
 	if string.match(a:getUserData(), "H") then
 		if string.match(b:getUserData(), "P") then
-			print("a is hammer")
 			hitPlayer(b, coll, a)
 		elseif string.match(b:getUserData(), "H") then
 			--TODO parry
@@ -274,7 +278,6 @@ function beginContact(a, b, coll)
 	--if "b" object is a hammer
 	elseif string.match(b:getUserData(), "H") then
 		if string.match(a:getUserData(), "P") then
-			print("b is hammer")
 			hitPlayer(a, coll, a)
 		elseif string.match(a:getUserData(), "H") then
 			--parry
