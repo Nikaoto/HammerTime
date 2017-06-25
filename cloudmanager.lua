@@ -1,8 +1,8 @@
+cloutImageCount = 6
 cloudImages = {}
-cloudImages.count = 6
 
 function initClouds()
-  for i = 1, cloudImages.count do
+  for i = 1, cloudImageCount do
     cloudImages[i] = love.graphics.newImage("/res/cloud"..i..".png")
   end
 end

@@ -7,6 +7,7 @@ require 'math1'
 require 'physics'
 require 'welcomescreen'
 require 'bloomShader'
+require 'helmetmanager'
 --require 'cloudmanager'
 
 --Classes
@@ -126,6 +127,8 @@ function initPlayers()
 	local j = love.joystick.getJoystickCount()
 	local interval = display.width / j
 
+  initHelmets()
+
 	for i, joystick in ipairs(joys) do
 		math.randomseed(i)
 		local upper = i * interval - SPAWN_SAFEZONE
@@ -139,7 +142,13 @@ function initPlayers()
 		local playerShader = PlayerShader(math.random(0, 255),	--Red
 																			math.random(0, 255),	--Green
 																			math.random(0, 255))	--Blue
-		players[i] = Player(x, y, HP, SP, PLAYER_SPRITE, weapon, world, "P"..i,
+     local helm
+     if helmetCount < i then
+       helm = helmetImage[math.random(1, 6)]
+     else
+       helm = helmetImages[i]
+     end
+    players[i] = Player(x, y, HP, SP, helm, weapon, world, "P"..i,
 												playerShader, controller, psystem:clone())
 		i = i + 1
 	end

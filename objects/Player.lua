@@ -262,19 +262,19 @@ end
 function Player:draw()
 	if self.isDashing then
 		love.graphics.setShader(self.shader:getShader()) --TODO Blur shader here
-	else
-	--Setting player color (shader)
-	love.graphics.setShader(self.shader:getShader())
 	end
 	if not self.dead then
 		--Drawing player
-		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
+		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 0.75, 0.70, self.ox, self.oy);
 		--Crosshair (for testing)
 		--love.graphics.draw(LOOK_SPRITE, self.lookX, self.lookY, 0, 1, 1, 10, 10);
 
 		--Drawing weapon if swinging
 		if self.isSwinging then
+			--Setting player color (shader)
+			love.graphics.setShader(self.shader:getShader())
 			self.weapon:draw()
+			love.graphics.setShader()
 		end
 	else
 		love.graphics.print("Respawning in "..round(self.deathTimer - love.timer.getTime()).." seconds",
