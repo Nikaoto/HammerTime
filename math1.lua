@@ -33,3 +33,11 @@ end
 function math.vectorAbs(x, y)
 	return math.distance(x, y)
 end
+
+function lerp(from, to, t)
+  return t < 0.5 and from + (to-from)*t or to + (from-to)*(1-t)
+end
+
+function ease_function(t)
+	return (1-math.cos(t*math.pi))/2
+end

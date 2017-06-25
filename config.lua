@@ -1,11 +1,11 @@
 display = {
-  width = 800,
-  height = 680,
+  width = 1366,
+  height = 768,
   settings = {
-    fullscreen = false,
+    fullscreen = true,
     resizable = false,
-    vsync = false,
-    borderless = false,
+    vsync = true,
+    borderless = true,
     centered = true,
     display = 1
   }

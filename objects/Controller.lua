@@ -6,7 +6,7 @@ function Controller:new(joystick)
   --Table for button controls
   self.btn = {
     swing = 6,
-    dash = 7,
+    dash = 5,
     pause = 10
   }
 

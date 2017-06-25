@@ -19,6 +19,9 @@ function Player:new(posX, posY, hp, sp, sprite, weapon,
 	self.moveSpeed = MOVESPEED
 	self.regenSp = SP_REGEN
 	self.sprite = sprite
+	self.isStunned = false
+	self.isDashing = false
+	--self.dashPressed = false
 	--Setting origin x and y
 	self.ox = self.sprite:getWidth()/2
 	self.oy = self.sprite:getHeight()/2
@@ -28,6 +31,13 @@ function Player:new(posX, posY, hp, sp, sprite, weapon,
 	--Setting death x and y
 	self.deathX = 0
 	self.deathY = 0
+	--Setting particle x and y
+	self.partX = 0
+	self.partY = 0
+	--Dash destination x and y
+	self.dashDestX = 0
+	self.dashDestY = 0
+
 	--Rigidbody table
 	self.rigid = {
 		--Rotation speed
@@ -55,30 +65,45 @@ function Player:new(posX, posY, hp, sp, sprite, weapon,
 	--
 end
 
+function Player:checkStunStatus(limit)
+	if self.rigid.body:getLinearVelocity() <= limit then
+		self.isStunned = false
+	end
+end
+
+function Player:manageDashing()
+	if self.isDashing and self.dashTime < love.timer.getTime() then
+		self.isDashing = false
+		self.dashTime = 0
+		self.rigid.body:setActive(true)
+	end
+end
+
 function Player:update(dt)
 	if not self.dead then
 		self.controller:getInput()
 		self:checkControls()
 		self.shader:update()
 		self.particleSys:update(dt)
-		self:move()
-		self:updateWeapon()
-		self:rotate()
-		self:rotateWeapon()
-		self:checkSwingSpeed(TICK)
 		self:manageStamina(dt)
+		self:manageDashing()
+		if not self.isStunned then
+			self:move()
+			if not self.isDashing then
+				self:updateWeapon()
+				self:rotate()
+				self:rotateWeapon()
+				--self:checkSwingSpeed(TICK)
+			end
+		else
+			self:checkStunStatus(10)
+			self.isSwinging = false
+		end
 	end
 end
 
 --Checks for button presses and does actions accordingly
 function Player:checkControls()
-	--Checking if paused
-	if self:getController():checkPauseBtn() and not PAUSED then
-		PAUSED = true
-	else
-		PAUSED = false
-	end
-
 	--Checking if swinging (and has enough stamina to swing)
 	if not self:getController():checkSwingBtn() then
 		self.isSwinging = false
@@ -89,20 +114,26 @@ function Player:checkControls()
 	--Setting movespeed according to swing status
 	if self.isSwinging then
 		self.moveSpeed = MOVESPEED_WHEN_SWINGING
+	elseif self.isDashing then
+		self.moveSpeed = DASH_SPEED
 	else
 		self.moveSpeed = MOVESPEED
 	end
 	--Checking if dashing
 	if self:getController():checkDashBtn() and self:checkEnoughStamina(DASHCOST)
-	then
-		 --Player:dash()
-		 --TODO player dash
+		then
+		self:dash(0.1)
 	end
-
 end
 
 function Player:checkEnoughStamina(cost)
 	return self.currSp >= cost
+end
+
+function Player:dash(time)
+	self.isDashing = true
+	self.dashTime = time + love.timer.getTime()
+	self.currSp = self.currSp - DASHCOST
 end
 
 --Handles player movement
@@ -201,7 +232,7 @@ function Player:manageStamina(dt)
 			self.isSwinging = false
 			self.currSp = 0
 		end
-	else
+	elseif not self.isDashing then
 		--Regenerate stamina
 		self.currSp = self.currSp + dt * self.regenSp
 		--Check in case of Sp overflow
@@ -210,8 +241,12 @@ function Player:manageStamina(dt)
 end
 
 function Player:draw()
-		--Setting player color (shader)
-		love.graphics.setShader(self.shader:getShader())
+	if self.isDashing then
+		love.graphics.setShader(self.shader:getShader()) --TODO Blur shader here
+	else
+	--Setting player color (shader)
+	love.graphics.setShader(self.shader:getShader())
+	end
 	if not self.dead then
 		--Drawing player
 		love.graphics.draw(self.sprite, self:getX(), self:getY(), self:getRotation(), 1, 1, self.ox, self.oy);
@@ -223,21 +258,22 @@ function Player:draw()
 		if self.isSwinging then
 			self.weapon:draw()
 		end
-
-		--Drawing particles
-		love.graphics.draw(self.particleSys, self:getX(), self:getY(),
-											 self.particleSys:getDirection(), 0.5, 0.5)
 	else
 		love.graphics.print({{255,0,0},"R.I.P."}, self.deathX, self.deathY, 0, 2, 2)
-
-		--Drawing particles
-		love.graphics.draw(self.particleSys, self.deathX, self.deathY,
-											 self.particleSys:getDirection(), 0.5, 0.5)
 	end
 	--Removing shader
 	love.graphics.setShader()
 end
 
+function Player:drawParticles(x, y)
+	--Checking if dead
+	if self.dead then
+		self.partX, self.partY = self.deathX, self.deathY
+	end
+	--Drawing particles
+	love.graphics.draw(self.particleSys, self.partX or self:getX(), self.partY or self:getY(),
+										 self.particleSys:getDirection(), 0.5, 0.5)
+end
 function Player:drawStatusBars()
 	if not self.dead then
 		love.graphics.reset()
@@ -269,16 +305,18 @@ function Player:checkDeath()
 	--RIP
 	if self.dead then
 		self.deathX, self.deathY = self.rigid.body:getX(), self.rigid.body:getY()
-		self:emitDeathParticles(PARTICLE_MIN_SPEED * 10, PARTICLE_MAX_SPEED * 18, 70, math.pi)
+		self:emitDeathParticles(PARTICLE_MIN_SPEED * 10, PARTICLE_MAX_SPEED * 15, 90, math.pi * 2)
 		self.rigid.body:destroy()
 	end
 end
 
 function Player:emitDeathParticles(vMin, vMax, partNum, spread)
-	local prevSpread = self.particleSys:getSpread()
+	--local prevSpread = self.particleSys:getSpread()
 	self.particleSys:setSpread(spread)
 	self.particleSys:setSpeed(vMin, vMax)
+	self.particleSys:setDirection(math.random(0, math.pi * 2))
 	self.particleSys:emit(partNum)
+	self.particleSys:update(0.3)
 end
 
 function Player:emitParticles(vMin, vMax, partNum, rotation)
