@@ -76,7 +76,7 @@ function initConstants()
 	MOVESPEED_WHEN_SWINGING = 190
 	HP = 100
 	SP = 100
-  MAX_KILLCOUNT = 2
+  MAX_KILLCOUNT = 100
   totalKills = 0
   DEATH_TIME = 4
 
