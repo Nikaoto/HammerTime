@@ -24,11 +24,12 @@ costs a lot of stamina and you might fall off the pillar if you don't watch your
 * Clouds during fighting
 
 ## Credits
-Sounds and music by Nika Inashvili (https://soundcloud.com/sehnmusic)
+#### Sounds and music by Nika Inashvili (https://soundcloud.com/sehnmusic)
 
-Art by Tio Gabunia
+#### Art by Tio Gabunia and Rati Tsikolia
 
-Code by me
+### Libraries Used
+* Classic for object orientation - https://github.com/rxi/classic
 
 ### TODO list for the GameJam (old)
 * Runes - kind of like powerups, but with more magic and less arcade-y-ness
