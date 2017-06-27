@@ -25,7 +25,9 @@ costs a lot of stamina and you might fall off the pillar if you don't watch your
 
 ## Credits
 Sounds and music by Nika Inashvili (https://soundcloud.com/sehnmusic)
+
 Art by Tio Gabunia
+
 Code by me
 
 ### TODO list for the GameJam (old)
