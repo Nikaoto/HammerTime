@@ -17,7 +17,7 @@ The faster you swing, the more damage you deal (and the more you knock others ba
 great way to escape. While dodging, you go through obstacles and other weapons. Be careful though, dashing
 costs a lot of stamina and you might fall off the pillar if you don't watch your step.
 
-##TODO list for maybe the future
+## TODO list for maybe the future
 * Scaling for bigger screens
 * Better pillar + fix collisions for bigger displays
 * Falling animations
