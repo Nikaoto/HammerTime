@@ -2,7 +2,7 @@
 Object = require 'libraries/classic/classic'
 
 --
-require 'config'
+require 'conf'
 require 'math1'
 require 'physics'
 require 'welcomescreen'
@@ -22,8 +22,8 @@ players = {}
 GAME_STARTED = false
 
 --Window
-love.window.setMode(display.width, display.height, display.settings)
-love.window.setTitle("Hammer Time")
+--love.window.setMode(display.width, display.height, display.settings)
+love.window.setTitle(gameTitle)
 
 --Sounds
 hitSound = love.audio.newSource("/res/hit.ogg", "static")
