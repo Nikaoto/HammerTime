@@ -1,6 +1,16 @@
 ﻿# HammerTime
 A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJam in Tbilisi.
 
+## How to download?
+Go into the release folder and download the executable file for your os. If you have LOVE installed you can
+download the HammerTime.love file and launch that. Either way works
+
+## How to play?
+You lose stamina while your weapon seathed. Swing your hammer as fast as you can and hit other players,
+The faster you swing, the more damage you deal (and the more you knock others back). Dodging is a
+great way to escape. While dodging, you go through obstacles and other weapons. Be careful though, dashing
+costs a lot of stamina and you might fall off the pillar if you don't watch your step.
+
 ## Controls
 Recommended players 2 and up (to infinity, as long as you can plug that many joysticks)
 Joysticks are a MUST!
@@ -10,12 +20,6 @@ Joysticks are a MUST!
 * Sheath Hammer - Right Bumper
 * Swing Hammer - Right Analog (literally, swing the analog around)
 * Dash - Left Bumper
-
-## How to play?
-You lose stamina while your weapon seathed. Swing your hammer as fast as you can and hit other players,
-The faster you swing, the more damage you deal (and the more you knock others back). Dodging is a
-great way to escape. While dodging, you go through obstacles and other weapons. Be careful though, dashing
-costs a lot of stamina and you might fall off the pillar if you don't watch your step.
 
 ## TODO list for maybe the future
 * Scaling for bigger screens
