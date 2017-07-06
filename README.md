@@ -1,9 +1,10 @@
 ﻿# HammerTime
 A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJam in Tbilisi.
+[]!(https://youtu.be/8nmbvzsoJWw)
 
 ## How to download?
 Go into the release folder and download the executable file for your os. If you have LOVE installed you can
-download the HammerTime.love file and launch that. Either way works
+download the HammerTime.love file and launch that. Either way works.
 
 ## How to play?
 You lose stamina while your weapon seathed. Swing your hammer as fast as you can and hit other players,
@@ -27,14 +28,6 @@ Joysticks are a MUST!
 * Falling animations
 * Clouds during fighting
 
-## Credits
-#### Sounds and music by Nika Inashvili (https://soundcloud.com/sehnmusic)
-
-#### Art by Tio Gabunia and Rati Tsikolia
-
-### Libraries Used
-* Classic for object orientation - https://github.com/rxi/classic
-
 ### TODO list for the GameJam (old)
 * Runes - kind of like powerups, but with more magic and less arcade-y-ness
 * ~~Physics - calculate angular velocity depending on analog swing speed and apply it linearly to hit players~~ **EZPZ**
@@ -42,8 +35,16 @@ Joysticks are a MUST!
 * Hole - a hole in the middle of the pillar. Anyone who trips, R.I.P.s
 * ~~Blood Particle Effects - now with 20% more gore and violence~~ **Donezo!**
 * ~~Deathmatch - the main game mode~~ **Yeppeperoni!**
-* Announcer - the announcer from moba games
+* Announcer - the kind of announcer from moba games
 * ~~Sounds~~ - **yes. Lots of 'em**
+
+## Credits
+#### Sounds and music by Nika Inashvili (https://soundcloud.com/sehnmusic)
+
+#### Art by Tio Gabunia and Rati Tsikolia
+
+### Libraries Used
+* Classic for object orientation - https://github.com/rxi/classic
 
 ## Final Notes
 Kind of ironic, a game of violence and murder made with LOVE. heh.
