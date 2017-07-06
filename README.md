@@ -1,6 +1,9 @@
 ﻿# HammerTime
-A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJam in Tbilisi.
+ 
 ![](http://i.imgur.com/V58JfHi.gif)
+
+A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJam in Tbilisi.
+
 
 ## How to download?
 Go into the release folder and download the executable file for your os. If you have LOVE installed you can
