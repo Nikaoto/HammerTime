@@ -5,11 +5,13 @@
 A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJam in Tbilisi.
 
 
-## How to download?
+## Download
 Go into the release folder and download the executable file for your os. If you have LOVE installed you can
 download the HammerTime.love file and launch that. Either way works.
 
-## How to play?
+## Play
+**The game requires at least two gamepads to play**
+
 You lose stamina while your weapon seathed. Swing your hammer as fast as you can and hit other players,
 The faster you swing, the more damage you deal (and the more you knock others back). Dodging is a
 great way to escape. While dodging, you go through obstacles and other weapons. Be careful though, dashing
