@@ -6,8 +6,7 @@ A local multiplayer game made in Lua with LOVE in 48 hours for the New Age GameJ
 
 
 ## Download
-Go into the release folder and download the executable file for your os. If you have LOVE installed you can
-download the HammerTime.love file and launch that. Either way works.
+Install [Love2d](https://love2d.org) and launch `HammerTime.love` inside the `release/` folder.
 
 ## Play
 **The game requires at least two gamepads to play**
